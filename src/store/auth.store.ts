@@ -4,7 +4,7 @@ import type { TutorGroup } from "@/types";
 
 interface AuthState {
   token: string | null;
-  userType: number | null; // 1 = student, 2 = tutor
+  userType: number | null;
   tutorName: string | null;
   tutorPhone: string | null;
   tutorImage: string | null;
@@ -78,7 +78,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     const userType = localStorage.getItem(STORAGE_KEYS.TUTOR_OR_STUDENT);
     const groupsStr = localStorage.getItem(STORAGE_KEYS.TUTOR_GROUPS);
     let groups: TutorGroup[] = [];
-    try { groups = groupsStr ? JSON.parse(groupsStr) : []; } catch { groups = []; }
+    try {
+      groups = groupsStr ? JSON.parse(groupsStr) : [];
+    } catch {
+      groups = [];
+    }
 
     set({
       token,
@@ -95,11 +99,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       studentRegion: localStorage.getItem(STORAGE_KEYS.STUDENT_REGION),
       studentGroupName: localStorage.getItem(STORAGE_KEYS.STUDENT_GROUP_NAME),
       studentGroupId: localStorage.getItem(STORAGE_KEYS.STUDENT_GROUP_ID),
-      studentFacultyName: localStorage.getItem(STORAGE_KEYS.STUDENT_FACULTY_NAME),
+      studentFacultyName: localStorage.getItem(
+        STORAGE_KEYS.STUDENT_FACULTY_NAME,
+      ),
       studentGender: localStorage.getItem(STORAGE_KEYS.STUDENT_GENDER),
       studentLevel: localStorage.getItem(STORAGE_KEYS.STUDENT_LEVEL),
-      hasFormFilled: localStorage.getItem(STORAGE_KEYS.HAS_FORM_FILLED) === "true",
-      questionNumber: parseInt(localStorage.getItem(STORAGE_KEYS.QUESTION_NUMBER) || "0"),
+      hasFormFilled:
+        localStorage.getItem(STORAGE_KEYS.HAS_FORM_FILLED) === "true",
+      questionNumber: parseInt(
+        localStorage.getItem(STORAGE_KEYS.QUESTION_NUMBER) || "0",
+      ),
     });
   },
 
@@ -112,13 +121,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem(STORAGE_KEYS.STUDENT_FULL_NAME, data.fullName);
     localStorage.setItem(STORAGE_KEYS.STUDENT_FIRST_NAME, data.firstName);
     localStorage.setItem(STORAGE_KEYS.STUDENT_ID, data.id);
-    if (data.image) localStorage.setItem(STORAGE_KEYS.STUDENT_IMAGE, data.image);
+    if (data.image)
+      localStorage.setItem(STORAGE_KEYS.STUDENT_IMAGE, data.image);
     localStorage.setItem(STORAGE_KEYS.STUDENT_REGION, data.region);
     localStorage.setItem(STORAGE_KEYS.STUDENT_GROUP_NAME, data.groupName);
     localStorage.setItem(STORAGE_KEYS.STUDENT_GROUP_ID, data.groupId);
     localStorage.setItem(STORAGE_KEYS.STUDENT_FACULTY_NAME, data.facultyName);
     localStorage.setItem(STORAGE_KEYS.STUDENT_GENDER, data.gender);
-    if (data.level) localStorage.setItem(STORAGE_KEYS.STUDENT_LEVEL, data.level);
+    if (data.level)
+      localStorage.setItem(STORAGE_KEYS.STUDENT_LEVEL, data.level);
     localStorage.setItem(STORAGE_KEYS.TUTOR_OR_STUDENT, "1");
     set({
       studentFullName: data.fullName,
@@ -139,7 +150,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem(STORAGE_KEYS.TUTOR_NAME, data.name);
     localStorage.setItem(STORAGE_KEYS.TUTOR_PHONE, data.phone);
     if (data.image) localStorage.setItem(STORAGE_KEYS.TUTOR_IMAGE, data.image);
-    localStorage.setItem(STORAGE_KEYS.TUTOR_GROUPS, JSON.stringify(data.groups));
+    localStorage.setItem(
+      STORAGE_KEYS.TUTOR_GROUPS,
+      JSON.stringify(data.groups),
+    );
     localStorage.setItem(STORAGE_KEYS.TUTOR_ID, data.id);
     localStorage.setItem(STORAGE_KEYS.TUTOR_OR_STUDENT, "2");
     set({
