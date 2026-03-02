@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { mainService } from "@/services/main.service";
 import Header from "@/components/Header";
+import { toast } from "@/components/Toast";
 
 export default function TutorChangePasswordPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function TutorChangePasswordPage() {
     setError("");
     try {
       await mainService.changeTutorPassword({ currentPassword: oldPassword, newPassword });
-      alert("Parol muvaffaqiyatli o'zgartirildi!");
+      toast("Parol muvaffaqiyatli o'zgartirildi!", "success");
       router.back();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };

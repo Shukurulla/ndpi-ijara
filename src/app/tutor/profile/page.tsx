@@ -8,6 +8,7 @@ import { BASE_URL } from "@/utils/constants";
 import type { TutorProfileData } from "@/types";
 import Header from "@/components/Header";
 import Loading from "@/components/Loading";
+import { toast } from "@/components/Toast";
 
 export default function TutorProfilePage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function TutorProfilePage() {
       }
     } catch (err) {
       console.error(err);
-      alert("Rasm yuklashda xatolik");
+      toast("Rasm yuklashda xatolik", "error");
     } finally {
       setUploading(false);
     }

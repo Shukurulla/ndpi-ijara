@@ -5,6 +5,7 @@ import { mainService } from "@/services/main.service";
 import { BASE_URL } from "@/utils/constants";
 import Header from "@/components/Header";
 import Loading from "@/components/Loading";
+import { toast } from "@/components/Toast";
 
 export default function TutorStudentStatusPage() {
   return (
@@ -83,7 +84,7 @@ function TutorStudentStatusContent() {
       } as any);
       // Local state ni yangilash
       if (res.data) setApt(res.data);
-      alert("Muvaffaqiyatli saqlandi!");
+      toast("Muvaffaqiyatli saqlandi!", "success");
       router.back();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -105,10 +106,10 @@ function TutorStudentStatusContent() {
         need_data: label,
       });
       setResendPending((prev) => ({ ...prev, [field]: true }));
-      alert(`"${label}" qayta jo'natish so'rovi yuborildi!`);
+      toast(`"${label}" qayta jo'natish so'rovi yuborildi!`, "success");
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      alert(error.response?.data?.message || "Xatolik yuz berdi");
+      toast(error.response?.data?.message || "Xatolik yuz berdi", "error");
     }
   };
 
@@ -127,7 +128,7 @@ function TutorStudentStatusContent() {
       }
     } catch {
       setCameraActive(false);
-      alert("Kameraga ruxsat berilmadi");
+      toast("Kameraga ruxsat berilmadi", "error");
     }
   };
 
@@ -149,10 +150,10 @@ function TutorStudentStatusContent() {
         formData.append("visitReportImage", file);
         const res = await mainService.uploadVisitReport(apt._id, formData);
         setApt(res.data);
-        alert("Hisobot foto yuklandi!");
+        toast("Hisobot foto yuklandi!", "success");
       } catch (err) {
         console.error(err);
-        alert("Foto yuklashda xatolik!");
+        toast("Foto yuklashda xatolik!", "error");
       } finally {
         setVisitUploading(false);
       }

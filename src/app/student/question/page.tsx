@@ -242,6 +242,12 @@ function QuestionContent() {
           if (!store.disabilityCertificate) { setError("Spravkani yuklang"); return; }
           if (store.disabilityCategory !== 1 && !store.disabilityCertificateExpiry) { setError("Spravka muddatini kiriting"); return; }
         } break;
+      case "notebooks":
+        if (!store.noNotebooks && !store.youthNotebook && !store.womenNotebook && !store.poorNotebook) { setError("Kamida bittasini tanlang yoki \"Yo'q\" ni belgilang"); return; }
+        if (store.youthNotebook && !store.youthNotebookDoc) { setError("Yoshlar daftari hujjatini yuklang"); return; }
+        if (store.womenNotebook && !store.womenNotebookDoc) { setError("Xotin-qizlar daftari hujjatini yuklang"); return; }
+        if (store.poorNotebook && !store.poorNotebookDoc) { setError("Kambag'al daftari hujjatini yuklang"); return; }
+        break;
       case "boilerImage": if (!store.boilerImage) { setError("Isitish qurilmasi suratini oling"); return; } break;
       case "gasImage": if (!store.gasImage) { setError("Gaz plita suratini oling"); return; } break;
       case "chimneyImage": if (!store.chimneyImage) { setError("Mo'ri suratini oling"); return; } break;
@@ -485,12 +491,6 @@ function QuestionContent() {
       <h3 className="text-lg font-semibold mb-2">Mahalla (MFY)</h3>
       <p className="text-sm text-gray-500 mb-4">Yashash joyingiz joylashgan mahallani tanlang</p>
       <input type="text" value={mahallaSearch} onChange={(e) => setMahallaSearch(e.target.value)} placeholder="Mahalla qidirish..." className="input-field mb-3" />
-      {selectedMahalla && (
-        <div className="flex items-center gap-2 p-3 mb-3 bg-blue-50 border border-blue-200 rounded-xl">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#5B6CF8"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span className="font-medium text-gray-800">{selectedMahalla.name}</span>
-        </div>
-      )}
       <div className="max-h-[55vh] overflow-y-auto border border-gray-200 rounded-xl">
         {filteredMahallas.map((m) => {
           const sel = selectedMahalla?._id === m._id;
@@ -856,7 +856,11 @@ function QuestionContent() {
         ] as const).map(nb => (
           <div key={nb.field} className="p-4 bg-gray-50 rounded-xl">
             <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={nb.val} onChange={(e) => { store.setField(nb.field, e.target.checked); if (!e.target.checked) store.setField(nb.docField, null); }} className="w-4 h-4 rounded" />
+              <input type="checkbox" checked={nb.val} onChange={(e) => {
+                if (e.target.checked) store.setField("noNotebooks", false);
+                store.setField(nb.field, e.target.checked);
+                if (!e.target.checked) store.setField(nb.docField, null);
+              }} className="w-4 h-4 rounded" />
               <span className="text-sm font-medium">{nb.label}</span></label>
             {nb.val && (
               <div className="mt-3"><input type="file" accept="image/*,.pdf" onChange={(e) => store.setField(nb.docField, e.target.files?.[0] || null)} className="input-field" />
@@ -864,6 +868,18 @@ function QuestionContent() {
             )}
           </div>
         ))}
+        <div className="p-4 bg-gray-50 rounded-xl">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked={store.noNotebooks} onChange={(e) => {
+              store.setField("noNotebooks", e.target.checked);
+              if (e.target.checked) {
+                store.setField("youthNotebook", false); store.setField("youthNotebookDoc", null);
+                store.setField("womenNotebook", false); store.setField("womenNotebookDoc", null);
+                store.setField("poorNotebook", false); store.setField("poorNotebookDoc", null);
+              }
+            }} className="w-4 h-4 rounded" />
+            <span className="text-sm font-medium">Yo&apos;q</span></label>
+        </div>
       </div></div>
   );
 

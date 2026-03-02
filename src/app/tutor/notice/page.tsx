@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Loading from "@/components/Loading";
 import EmptyState from "@/components/EmptyState";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "@/components/Toast";
 
 export default function TutorNoticePage() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function TutorNoticePage() {
       fetchNotices();
     } catch (err) {
       console.error(err);
-      alert("Xatolik yuz berdi");
+      toast("Xatolik yuz berdi", "error");
     } finally {
       setSending(false);
     }
@@ -67,7 +68,7 @@ export default function TutorNoticePage() {
                 className="card w-full text-left flex items-center justify-between"
               >
                 <div>
-                  <p className="font-medium text-sm">{new Date(n.date).toLocaleDateString("uz")}</p>
+                  <p className="font-medium text-sm">{new Date(n.date).toLocaleDateString("uz")} {new Date(n.date).toLocaleTimeString("uz", { hour: "2-digit", minute: "2-digit" })}</p>
                   <p className="text-xs text-gray-500">{n.countDocuments} ta talaba</p>
                 </div>
                 <div className="flex items-center gap-2">

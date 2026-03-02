@@ -49,6 +49,7 @@ interface QuestionState {
   womenNotebookDoc: File | null;
   poorNotebook: boolean;
   poorNotebookDoc: File | null;
+  noNotebooks: boolean;
 
   // Task 7: Bino tafsilotlari
   domNumber: string;
@@ -103,6 +104,7 @@ const initialState = {
   womenNotebookDoc: null,
   poorNotebook: false,
   poorNotebookDoc: null,
+  noNotebooks: false,
   domNumber: "",
   kvartiranumber: "",
   geoLat: 0,
