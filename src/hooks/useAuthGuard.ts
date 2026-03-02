@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { STORAGE_KEYS } from "@/utils/constants";
@@ -7,26 +7,31 @@ import { STORAGE_KEYS } from "@/utils/constants";
 export function useAuthGuard() {
   const router = useRouter();
   const { token, userType, init } = useAuthStore();
+  const redirecting = useRef(false);
 
   useEffect(() => {
     init();
   }, [init]);
 
   useEffect(() => {
+    if (redirecting.current) return;
     const storedToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     const storedUserType = localStorage.getItem(STORAGE_KEYS.TUTOR_OR_STUDENT);
-    
+
     if (!storedToken) {
-      router.replace("/user-type");
+      redirecting.current = true;
+      setTimeout(() => router.replace("/user-type"), 0);
       return;
     }
 
     // Redirect to correct login page if user type doesn't match current route
     const path = window.location.pathname;
     if (storedUserType === "1" && path.startsWith("/tutor")) {
-      router.replace("/student/home");
+      redirecting.current = true;
+      setTimeout(() => router.replace("/student/home"), 0);
     } else if (storedUserType === "2" && path.startsWith("/student")) {
-      router.replace("/tutor/home");
+      redirecting.current = true;
+      setTimeout(() => router.replace("/tutor/home"), 0);
     }
   }, [token, userType, router]);
 
