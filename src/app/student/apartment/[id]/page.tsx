@@ -98,15 +98,13 @@ function ApartmentDetailContent() {
     bedroom: "Yotoqxona",
   };
 
-  if (loading) return <><Header title="Ijara ma'lumotlari" /><Loading /></>;
-
   useEffect(() => {
     if (!loading && (notFound || !data)) {
       router.replace(`/student/apartment-type/${id}`);
     }
   }, [loading, notFound, data, id, router]);
 
-  if (notFound || !data) {
+  if (loading || notFound || !data) {
     return <><Header title="Ijara ma'lumotlari" /><Loading /></>;
   }
 
