@@ -9,7 +9,7 @@ import EmptyState from "@/components/EmptyState";
 
 const colorLabels: Record<string, string> = {
   green: "Tasdiqlangan",
-  yellow: "Kutilmoqda",
+  yellow: "Sariq zona",
   red: "Rad etilgan",
   blue: "Yangi",
 };

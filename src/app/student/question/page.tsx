@@ -39,7 +39,14 @@ function QuestionContent() {
   const permission = searchParams.get("permission") || "";
   const typeFromUrl = searchParams.get("type") || "";
   const store = useQuestionStore();
-  const { setQuestionNumber, setHasFormFilled } = useAuthStore();
+  const { setQuestionNumber, setHasFormFilled, studentGender } = useAuthStore();
+  const mapGender = (g: string | null): string => {
+    if (!g) return "";
+    const l = g.toLowerCase();
+    if (l === "erkak" || l === "male") return "ogil";
+    if (l === "ayol" || l === "female") return "qiz";
+    return "";
+  };
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -68,6 +75,21 @@ function QuestionContent() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // Sahifa ochilganda oldingi ma'lumotlarni tozalash
+  useEffect(() => {
+    store.reset();
+    setStep(1);
+    setBuildingType("");
+    setSelectedMahalla(null);
+    setMahallaSearch("");
+    setSelectedStreet(null);
+    setStreetQuery("");
+    setAddressHouse("");
+    setHasContract(null);
+    setOtherBoiler("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeFromUrl]);
+
   useEffect(() => {
     fetch("/data/nukus_districts.json").then(r => r.json())
       .then((d: Mahalla[]) => { setMahallas(d); setFilteredMahallas(d); }).catch(() => {});
@@ -87,16 +109,30 @@ function QuestionContent() {
 
   const getSteps = (): string[] => {
     if (apartmentType === "tenant") {
-      const steps = ["phone","mahalla","address","buildingType","contract","boilerType",
-        "centralizedHeating","price","studentsCount","owner","apartmentNumber","addition",
-        "orphan","disability","notebooks"];
+      const steps = ["phone","buildingType","mahalla","address"];
+      steps.push("contract","boilerType");
+      if (buildingType !== "land") steps.push("centralizedHeating");
+      steps.push("price","studentsCount","owner","addition",
+        "orphan","disability","notebooks");
       if (store.isCentralizedHeating !== true) steps.push("boilerImage","gasImage","chimneyImage","additionImage");
       else steps.push("gasImage","additionImage");
       return steps;
     }
-    if (apartmentType === "bedroom") return ["bedroomNumber","roomNumber","addition","orphan","disability","notebooks"];
+    if (apartmentType === "bedroom") return ["phone","bedroomNumber","roomNumber","addition","orphan","disability","notebooks"];
     if (apartmentType === "littleHouse") {
-      const steps = ["phone","ownerName","ownerPhone","centralizedHeating","addition","orphan","disability","notebooks"];
+      const steps = ["phone","buildingType","mahalla","address"];
+      steps.push("ownerName","ownerPhone");
+      if (buildingType !== "land") steps.push("centralizedHeating");
+      steps.push("addition","orphan","disability","notebooks");
+      if (store.isCentralizedHeating !== true) steps.push("boilerImage","gasImage","chimneyImage","additionImage");
+      else steps.push("gasImage","additionImage");
+      return steps;
+    }
+    if (apartmentType === "relative") {
+      const steps = ["phone","buildingType","mahalla","address"];
+      steps.push("ownerName","ownerPhone");
+      if (buildingType !== "land") steps.push("centralizedHeating");
+      steps.push("addition","orphan","disability","notebooks");
       if (store.isCentralizedHeating !== true) steps.push("boilerImage","gasImage","chimneyImage","additionImage");
       else steps.push("gasImage","additionImage");
       return steps;
@@ -139,16 +175,37 @@ function QuestionContent() {
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [streetQuery]);
 
+  const geoRequested = useRef(false);
   const handleNext = () => {
     setError("");
+    // Task 13: Birinchi "Keyingi" bosilganda geolocation so'rash
+    if (!geoRequested.current && navigator.geolocation) {
+      geoRequested.current = true;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          store.setField("geoLat", pos.coords.latitude);
+          store.setField("geoLon", pos.coords.longitude);
+        },
+        () => {}
+      );
+    }
     switch (currentStepName) {
       case "phone": if (!store.q1Phone || store.q1Phone.length < 9) { setError("Telefon raqamni to'liq kiriting (9 raqam)"); return; } break;
       case "mahalla": if (!selectedMahalla) { setError("Mahallani tanlang"); return; } break;
       case "address":
         if (!selectedStreet) { setError("Ko'chani qidirib tanlang"); return; }
-        if (!addressHouse.trim()) { setError("Uy raqamini kiriting"); return; }
+        if (buildingType === "multi") {
+          if (!store.domNumber.trim()) { setError("Dom raqamini kiriting"); return; }
+          if (!store.kvartiranumber.trim()) { setError("Kvartira raqamini kiriting"); return; }
+        } else {
+          if (!addressHouse.trim()) { setError("Uy raqamini kiriting"); return; }
+        }
         break;
       case "buildingType": if (!buildingType) { setError("Kvartira turini tanlang"); return; } break;
+      case "buildingDetails":
+        if (!store.domNumber.trim()) { setError("Dom raqamini kiriting"); return; }
+        if (!store.kvartiranumber.trim()) { setError("Kvartira raqamini kiriting"); return; }
+        break;
       case "contract": if (hasContract === null) { setError("Shartnoma borligini tanlang"); return; } break;
       case "boilerType":
         if (!store.q7BoilerType) { setError("Isitish turini tanlang"); return; }
@@ -174,7 +231,6 @@ function QuestionContent() {
           if (!store.orphanType) { setError("Yetimlik turini tanlang"); return; }
           if (store.orphanType === "mehribonlikUyi" && !store.orphanCertificate) { setError("Guvohnomani yuklang"); return; }
           if (store.orphanType === "vasiylik") {
-            if (!store.guardianGender) { setError("Jinsni tanlang"); return; }
             if (!store.guardianPhone.trim() || store.guardianPhone.replace(/\D/g, "").length < 9) { setError("Vasiy telefon raqamini to'liq kiriting"); return; }
             if (!store.governorDecision) { setError("Hokim qarorini yuklang"); return; }
           }
@@ -206,20 +262,24 @@ function QuestionContent() {
       if (permission) formData.append("permission", permission);
       formData.append("isCentralizedHeating", (store.isCentralizedHeating === true).toString());
       if (store.isCentralizedHeating !== true && store.boilerLocation) formData.append("boilerLocation", store.boilerLocation);
+      if (store.geoLat) formData.append("geoLat", store.geoLat.toString());
+      if (store.geoLon) formData.append("geoLon", store.geoLon.toString());
 
       if (apartmentType === "tenant") {
         formData.append("district", selectedMahalla?.name || store.q4District);
+        formData.append("typeOfAppartment", buildingType);
         formData.append("fullAddress", store.q3FullAddress);
         formData.append("lat", store.q4Lat.toString());
         formData.append("lon", store.q4Lon.toString());
-        formData.append("typeOfAppartment", buildingType);
+        if (buildingType === "multi") {
+          formData.append("appartmentNumber", `${store.domNumber}-${store.kvartiranumber}`);
+        }
         formData.append("contract", hasContract ? "true" : "false");
         formData.append("typeOfBoiler", store.q7BoilerType === "Boshqa" ? otherBoiler : store.q7BoilerType);
         formData.append("priceAppartment", unformatNumber(store.q8Price));
         formData.append("numberOfStudents", unformatNumber(store.q8MemberCount));
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
-        formData.append("appartmentNumber", store.q10ApartmentNumber);
         formData.append("description", store.q10Description);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
@@ -234,6 +294,32 @@ function QuestionContent() {
         formData.append("roomNumber", store.roomNumber);
         formData.append("description", store.q10Description);
       } else if (apartmentType === "littleHouse") {
+        formData.append("district", selectedMahalla?.name || store.q4District);
+        formData.append("typeOfAppartment", buildingType);
+        formData.append("fullAddress", store.q3FullAddress);
+        formData.append("lat", store.q4Lat.toString());
+        formData.append("lon", store.q4Lon.toString());
+        if (buildingType === "multi") {
+          formData.append("appartmentNumber", `${store.domNumber}-${store.kvartiranumber}`);
+        }
+        formData.append("appartmentOwnerName", store.q9OwnerName);
+        formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
+        formData.append("description", store.q10Description);
+        if (store.isCentralizedHeating !== true) {
+          if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
+          if (store.chimneyImage) formData.append("chimney", store.chimneyImage);
+        }
+        if (store.gasImage) formData.append("gazStove", store.gasImage);
+        if (store.additionImage) formData.append("additionImage", store.additionImage);
+      } else if (apartmentType === "relative") {
+        formData.append("district", selectedMahalla?.name || store.q4District);
+        formData.append("typeOfAppartment", buildingType);
+        formData.append("fullAddress", store.q3FullAddress);
+        formData.append("lat", store.q4Lat.toString());
+        formData.append("lon", store.q4Lon.toString());
+        if (buildingType === "multi") {
+          formData.append("appartmentNumber", `${store.domNumber}-${store.kvartiranumber}`);
+        }
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
         formData.append("description", store.q10Description);
@@ -254,7 +340,7 @@ function QuestionContent() {
         formData.append("orphanType", store.orphanType);
         if (store.orphanType === "mehribonlikUyi" && store.orphanCertificate) formData.append("orphanCertificate", store.orphanCertificate);
         if (store.orphanType === "vasiylik") {
-          formData.append("guardianGender", store.guardianGender);
+          formData.append("guardianGender", mapGender(studentGender));
           formData.append("guardianPhone", "+998" + store.guardianPhone.replace(/\D/g, ""));
           if (store.governorDecision) formData.append("governorDecision", store.governorDecision);
         }
@@ -289,6 +375,7 @@ function QuestionContent() {
       case "mahalla": return renderMahallaStep();
       case "address": return renderAddressStep();
       case "buildingType": return renderBuildingTypeStep();
+      case "buildingDetails": return renderBuildingDetailsStep();
       case "contract": return renderContractStep();
       case "boilerType": return renderBoilerTypeStep();
       case "centralizedHeating": return renderCentralizedStep();
@@ -404,7 +491,7 @@ function QuestionContent() {
           <span className="font-medium text-gray-800">{selectedMahalla.name}</span>
         </div>
       )}
-      <div className="max-h-[280px] overflow-y-auto border border-gray-200 rounded-xl">
+      <div className="max-h-[55vh] overflow-y-auto border border-gray-200 rounded-xl">
         {filteredMahallas.map((m) => {
           const sel = selectedMahalla?._id === m._id;
           return (<button key={m._id} onClick={() => { setSelectedMahalla(m); store.setField("q4District", m.name); }}
@@ -452,7 +539,7 @@ function QuestionContent() {
     <div className="space-y-4">
       <div>
         <h3 className="text-lg font-semibold text-gray-900">Yashash manzili</h3>
-        <p className="text-sm text-gray-500 mt-1">Ko&apos;cha nomini qidiring va uy raqamini kiriting</p>
+        <p className="text-sm text-gray-500 mt-1">{buildingType === "multi" ? "Ko'cha, dom va kvartira raqamini kiriting" : "Ko'cha nomini qidiring va uy raqamini kiriting"}</p>
       </div>
 
       {/* Ko'cha qidiruv */}
@@ -523,8 +610,26 @@ function QuestionContent() {
         )}
       </div>
 
-      {/* Uy raqami — qo'lda */}
-      {selectedStreet && (
+      {/* Multi: dom + kvartira; Boshqalar: uy raqami */}
+      {selectedStreet && buildingType === "multi" && (
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm text-gray-600 mb-1.5 block">Dom raqami</label>
+            <input type="text" value={store.domNumber}
+              onChange={(e) => store.setField("domNumber", e.target.value)}
+              placeholder="Masalan: 5"
+              className={`w-full py-3 px-4 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${error && !store.domNumber.trim() ? "border-red-500" : "border-gray-300"}`} />
+          </div>
+          <div>
+            <label className="text-sm text-gray-600 mb-1.5 block">Kvartira raqami</label>
+            <input type="text" value={store.kvartiranumber}
+              onChange={(e) => store.setField("kvartiranumber", e.target.value)}
+              placeholder="Masalan: 12"
+              className={`w-full py-3 px-4 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${error && !store.kvartiranumber.trim() ? "border-red-500" : "border-gray-300"}`} />
+          </div>
+        </div>
+      )}
+      {selectedStreet && buildingType !== "multi" && (
         <div>
           <label className="text-sm text-gray-600 mb-1.5 block">Uy raqami</label>
           <input type="text" value={addressHouse}
@@ -544,8 +649,28 @@ function QuestionContent() {
       <div className="space-y-3">
         {apartmentBuildingTypes.map((t) => (
           <label key={t.value} className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition ${buildingType === t.value ? "border-[#5B6CF8] bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
-            <input type="radio" name="bt" checked={buildingType === t.value} onChange={() => setBuildingType(t.value)} className="w-4 h-4" />
+            <input type="radio" name="bt" checked={buildingType === t.value} onChange={() => {
+              setBuildingType(t.value);
+              if (t.value === "land") {
+                store.setField("isCentralizedHeating", false);
+                store.setField("boilerLocation", "ichki");
+              } else {
+                store.setField("isCentralizedHeating", null);
+                store.setField("boilerLocation", "");
+              }
+            }} className="w-4 h-4" />
             <span className="text-sm font-medium">{t.label}</span></label>))}
+      </div></div>
+  );
+
+  const renderBuildingDetailsStep = () => (
+    <div><h3 className="text-lg font-semibold mb-2">Bino tafsilotlari</h3>
+      <p className="text-sm text-gray-500 mb-4">Dom va kvartira raqamini kiriting</p>
+      <div className="space-y-4">
+        <div><label className="text-sm text-gray-600 mb-1.5 block">Dom raqami</label>
+          <input type="text" value={store.domNumber} onChange={(e) => store.setField("domNumber", e.target.value)} placeholder="Masalan: 5" className="input-field" /></div>
+        <div><label className="text-sm text-gray-600 mb-1.5 block">Kvartira raqami</label>
+          <input type="text" value={store.kvartiranumber} onChange={(e) => store.setField("kvartiranumber", e.target.value)} placeholder="Masalan: 12" className="input-field" /></div>
       </div></div>
   );
 
@@ -592,7 +717,7 @@ function QuestionContent() {
       <div className="space-y-3 mb-4">
         <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition ${store.isCentralizedHeating === true ? "border-[#5B6CF8] bg-blue-50" : "border-gray-200"}`}>
           <input type="radio" name="ch" checked={store.isCentralizedHeating === true} onChange={() => { store.setField("isCentralizedHeating", true); store.setField("boilerLocation", ""); }} className="w-4 h-4" />
-          <div><p className="text-sm font-medium">Ha, markazlashgan</p><p className="text-xs text-gray-400">Foto kerak emas</p></div></label>
+          <div><p className="text-sm font-medium">Ha, markazlashgan</p></div></label>
         <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition ${store.isCentralizedHeating === false ? "border-[#5B6CF8] bg-blue-50" : "border-gray-200"}`}>
           <input type="radio" name="ch" checked={store.isCentralizedHeating === false} onChange={() => store.setField("isCentralizedHeating", false)} className="w-4 h-4" />
           <div><p className="text-sm font-medium">Yo&apos;q, alohida kotel</p></div></label>
@@ -602,10 +727,10 @@ function QuestionContent() {
           <div className="space-y-2">
             <label className={`flex items-center gap-3 p-3 rounded-xl border-2 bg-white cursor-pointer transition ${store.boilerLocation === "ichki" ? "border-[#5B6CF8] bg-blue-50" : "border-gray-200"}`}>
               <input type="radio" name="bl" checked={store.boilerLocation === "ichki"} onChange={() => store.setField("boilerLocation", "ichki")} className="w-4 h-4" />
-              <p className="text-sm font-medium">Ishtema (uy ichida)</p></label>
+              <p className="text-sm font-medium">Uy ichida</p></label>
             <label className={`flex items-center gap-3 p-3 rounded-xl border-2 bg-white cursor-pointer transition ${store.boilerLocation === "tashqi" ? "border-[#5B6CF8] bg-blue-50" : "border-gray-200"}`}>
               <input type="radio" name="bl" checked={store.boilerLocation === "tashqi"} onChange={() => store.setField("boilerLocation", "tashqi")} className="w-4 h-4" />
-              <p className="text-sm font-medium">Sirtama (uy tashqarisida)</p></label>
+              <p className="text-sm font-medium">Uy tashqarisida</p></label>
           </div></div>
       )}</div>
   );
@@ -673,13 +798,6 @@ function QuestionContent() {
           )}
           {store.orphanType === "vasiylik" && (
             <div className="space-y-3">
-              <div><p className="text-sm text-gray-600 mb-2">Jins:</p>
-                <div className="flex gap-3">
-                  {[{v:"qiz",l:"Qiz bola"},{v:"ogil",l:"O'g'il bola"}].map(g => (
-                    <label key={g.v} className={`flex-1 p-3 rounded-xl border-2 cursor-pointer text-center transition ${store.guardianGender === g.v ? "border-purple-500 bg-purple-50" : "border-gray-200"}`}>
-                      <input type="radio" name="gg" checked={store.guardianGender === g.v} onChange={() => store.setField("guardianGender", g.v)} className="hidden" />
-                      <span className="text-sm font-medium">{g.l}</span></label>))}
-                </div></div>
               <div><label className="text-sm text-gray-600 mb-1.5 block">Vasiy telefoni</label>
                 <div className="flex items-center gap-2"><span className="text-gray-500 font-medium whitespace-nowrap">+998</span>
                   <input type="tel" inputMode="numeric" value={formatPhone(store.guardianPhone)}
@@ -782,7 +900,17 @@ function QuestionContent() {
         {step < totalSteps ? (
           <button onClick={handleNext} className="flex-1 btn-primary">Keyingi</button>
         ) : (
-          <button onClick={handleSubmit} disabled={loading} className="flex-1 btn-primary">{loading ? "Yuborilmoqda..." : "Yuborish"}</button>
+          <button onClick={handleSubmit} disabled={loading} className={`flex-1 btn-primary ${loading ? "opacity-50 pointer-events-none" : ""}`}>
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Yuborilmoqda...
+              </span>
+            ) : "Yuborish"}
+          </button>
         )}
       </div>
     </div>

@@ -33,7 +33,11 @@ function TutorStudentStatusContent() {
 
   // Task 7: Visit report
   const [visitUploading, setVisitUploading] = useState(false);
-  const visitInputRef = useRef<HTMLInputElement>(null);
+
+  // Task 14: Camera capture for visit report
+  const [cameraActive, setCameraActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,26 +112,68 @@ function TutorStudentStatusContent() {
     }
   };
 
-  // Task 7: Visit report photo upload
-  const handleVisitReportUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0] || !apt) return;
-    setVisitUploading(true);
+
+  // Task 14: Camera capture functions
+  const openVisitCamera = async () => {
+    setCameraActive(true);
     try {
-      const formData = new FormData();
-      formData.append("visitReportImage", e.target.files[0]);
-      const res = await mainService.uploadVisitReport(apt._id, formData);
-      setApt(res.data);
-      alert("Hisobot foto yuklandi!");
-    } catch (err) {
-      console.error(err);
-      alert("Foto yuklashda xatolik!");
-    } finally {
-      setVisitUploading(false);
-      if (visitInputRef.current) visitInputRef.current.value = "";
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch {
+      setCameraActive(false);
+      alert("Kameraga ruxsat berilmadi");
     }
   };
 
+  const captureVisitPhoto = () => {
+    if (!videoRef.current || !apt) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(videoRef.current, 0, 0);
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      closeVisitCamera();
+      setVisitUploading(true);
+      try {
+        const file = new File([blob], `visit_${Date.now()}.jpg`, { type: "image/jpeg" });
+        const formData = new FormData();
+        formData.append("visitReportImage", file);
+        const res = await mainService.uploadVisitReport(apt._id, formData);
+        setApt(res.data);
+        alert("Hisobot foto yuklandi!");
+      } catch (err) {
+        console.error(err);
+        alert("Foto yuklashda xatolik!");
+      } finally {
+        setVisitUploading(false);
+      }
+    }, "image/jpeg", 0.85);
+  };
+
+  const closeVisitCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
   const getImg = (p: string) => p?.startsWith("http") ? p : `${BASE_URL}${p}`;
+  const isPdf = (p: string) => p?.toLowerCase().endsWith(".pdf");
+  const viewFile = (p: string) => {
+    const url = getImg(p);
+    if (isPdf(p)) window.open(url, "_blank");
+    else setShowImage(url);
+  };
 
   const statusColors = [
     { value: "green", label: "Yashil", bg: "bg-green-500" },
@@ -146,6 +192,23 @@ function TutorStudentStatusContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Task 14: Camera overlay */}
+      {cameraActive && (
+        <div className="fixed inset-0 z-[110] bg-black flex flex-col">
+          <video ref={videoRef} autoPlay playsInline muted className="flex-1 object-cover" />
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-8 pb-10 pt-6 bg-gradient-to-t from-black/70 to-transparent">
+            <button type="button" onClick={closeVisitCamera}
+              className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <button type="button" onClick={captureVisitPhoto}
+              className="w-20 h-20 rounded-full border-4 border-white bg-white/30 flex items-center justify-center active:scale-95 transition">
+              <div className="w-16 h-16 rounded-full bg-white" />
+            </button>
+            <div className="w-14 h-14" />
+          </div>
+        </div>
+      )}
       <Header title="Talaba holati" />
 
       <div className="px-4 py-4 space-y-4">
@@ -302,16 +365,16 @@ function TutorStudentStatusContent() {
                     </div>
                   )}
                   {apt.governorDecision && (
-                    <a href={getImg(apt.governorDecision)} target="_blank" rel="noopener noreferrer" className="block text-[#4776E6] text-xs underline mt-1">
+                    <button onClick={() => viewFile(apt.governorDecision)} className="mt-2 w-full py-2 rounded-lg bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium">
                       Hokim qarorini ko&apos;rish
-                    </a>
+                    </button>
                   )}
                 </>
               )}
               {apt.orphanType === "mehribonlikUyi" && apt.orphanCertificate && (
-                <a href={getImg(apt.orphanCertificate)} target="_blank" rel="noopener noreferrer" className="block text-[#4776E6] text-xs underline mt-1">
+                <button onClick={() => viewFile(apt.orphanCertificate)} className="mt-2 w-full py-2 rounded-lg bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium">
                   Guvohnomani ko&apos;rish
-                </a>
+                </button>
               )}
             </div>
           </div>
@@ -351,9 +414,9 @@ function TutorStudentStatusContent() {
                 <p className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Muddatsiz</p>
               )}
               {apt.disabilityCertificate && (
-                <a href={getImg(apt.disabilityCertificate)} target="_blank" rel="noopener noreferrer" className="block text-[#4776E6] text-xs underline mt-1">
+                <button onClick={() => viewFile(apt.disabilityCertificate)} className="mt-2 w-full py-2 rounded-lg bg-orange-50 border border-orange-200 text-orange-700 text-xs font-medium">
                   Spravkani ko&apos;rish
-                </a>
+                </button>
               )}
             </div>
           </div>
@@ -368,42 +431,42 @@ function TutorStudentStatusContent() {
             </div>
             <div className="space-y-2 text-sm">
               {apt.youthNotebook && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Yoshlar daftari</span>
-                  <div className="flex items-center gap-2">
+                <div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Yoshlar daftari</span>
                     <span className="text-green-600 text-xs font-medium">Ha</span>
-                    {apt.youthNotebookDoc && (
-                      <a href={getImg(apt.youthNotebookDoc)} target="_blank" rel="noopener noreferrer" className="text-[#4776E6] text-xs underline">
-                        Ko&apos;rish
-                      </a>
-                    )}
                   </div>
+                  {apt.youthNotebookDoc && (
+                    <button onClick={() => viewFile(apt.youthNotebookDoc)} className="mt-1.5 w-full py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium">
+                      Hujjatni ko&apos;rish
+                    </button>
+                  )}
                 </div>
               )}
               {apt.womenNotebook && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Xotin-qizlar daftari</span>
-                  <div className="flex items-center gap-2">
+                <div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Xotin-qizlar daftari</span>
                     <span className="text-green-600 text-xs font-medium">Ha</span>
-                    {apt.womenNotebookDoc && (
-                      <a href={getImg(apt.womenNotebookDoc)} target="_blank" rel="noopener noreferrer" className="text-[#4776E6] text-xs underline">
-                        Ko&apos;rish
-                      </a>
-                    )}
                   </div>
+                  {apt.womenNotebookDoc && (
+                    <button onClick={() => viewFile(apt.womenNotebookDoc)} className="mt-1.5 w-full py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium">
+                      Hujjatni ko&apos;rish
+                    </button>
+                  )}
                 </div>
               )}
               {apt.poorNotebook && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Kambag&apos;al daftari</span>
-                  <div className="flex items-center gap-2">
+                <div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Kambag&apos;al daftari</span>
                     <span className="text-green-600 text-xs font-medium">Ha</span>
-                    {apt.poorNotebookDoc && (
-                      <a href={getImg(apt.poorNotebookDoc)} target="_blank" rel="noopener noreferrer" className="text-[#4776E6] text-xs underline">
-                        Ko&apos;rish
-                      </a>
-                    )}
                   </div>
+                  {apt.poorNotebookDoc && (
+                    <button onClick={() => viewFile(apt.poorNotebookDoc)} className="mt-1.5 w-full py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium">
+                      Hujjatni ko&apos;rish
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -475,28 +538,28 @@ function TutorStudentStatusContent() {
             <h4 className="text-sm font-medium mb-2">Shartnoma</h4>
             <div className="flex gap-2">
               {apt.contractImage && (
-                <a href={getImg(apt.contractImage)} target="_blank" rel="noopener noreferrer" className="text-[#4776E6] text-sm underline">
-                  Rasm
-                </a>
+                <button onClick={() => viewFile(apt.contractImage)} className="flex-1 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
+                  Rasmni ko&apos;rish
+                </button>
               )}
               {apt.contractPdf && (
-                <a href={getImg(apt.contractPdf)} target="_blank" rel="noopener noreferrer" className="text-[#4776E6] text-sm underline">
-                  PDF
+                <a href={getImg(apt.contractPdf)} target="_blank" rel="noopener noreferrer" className="flex-1 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium text-center">
+                  PDF ko&apos;rish
                 </a>
               )}
             </div>
           </div>
         )}
 
-        {/* Map */}
-        {apt.location?.lat && apt.location?.long && (
+        {/* Map — qurilma GPS joylashuvi */}
+        {apt.geoLocation?.lat && apt.geoLocation?.long && (
           <div className="card">
-            <h4 className="text-sm font-medium mb-2">Joylashuv</h4>
+            <h4 className="text-sm font-medium mb-2">Qurilma joylashuvi</h4>
             <a
-              href={`https://maps.google.com/?q=${apt.location.lat},${apt.location.long}`}
+              href={`https://maps.google.com/?q=${apt.geoLocation.lat},${apt.geoLocation.long}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#4776E6] text-sm underline"
+              className="w-full py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium text-center block"
             >
               Google Maps da ko&apos;rish
             </a>
@@ -508,20 +571,12 @@ function TutorStudentStatusContent() {
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-semibold">Borgan isboti (hisobot)</h4>
             <button
-              onClick={() => visitInputRef.current?.click()}
+              onClick={openVisitCamera}
               disabled={visitUploading}
               className="px-3 py-1.5 rounded-lg header-gradient text-white text-xs font-medium"
             >
-              {visitUploading ? "Yuklanmoqda..." : "+ Foto qo'shish"}
+              {visitUploading ? "Yuklanmoqda..." : "Rasmga olish"}
             </button>
-            <input
-              ref={visitInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleVisitReportUpload}
-              className="hidden"
-            />
           </div>
           {apt.visitReportImages && apt.visitReportImages.length > 0 ? (
             <div className="grid grid-cols-3 gap-2">

@@ -19,7 +19,11 @@ export default function TutorNoticePage() {
   const fetchNotices = useCallback(async () => {
     try {
       const res = await mainService.getMyNotice();
-      setNotices(res.data || []);
+      const sorted = (res.data || []).sort(
+        (a: MyNoticeData, b: MyNoticeData) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      setNotices(sorted);
     } catch (err) {
       console.error(err);
     } finally {
@@ -59,7 +63,7 @@ export default function TutorNoticePage() {
             {notices.map((n) => (
               <button
                 key={n._id}
-                onClick={() => router.push(`/tutor/notice-group/${n._id}`)}
+                onClick={() => router.push(`/tutor/notice-group/${n._id}?status=${n.status}`)}
                 className="card w-full text-left flex items-center justify-between"
               >
                 <div>
@@ -68,9 +72,9 @@ export default function TutorNoticePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs px-2 py-1 rounded-full ${
-                    n.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                    n.status === "process" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                   }`}>
-                    {n.status === "active" ? "Faol" : n.status}
+                    {n.status === "process" ? "Jarayonda" : "Tugatilgan"}
                   </span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="#999"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
                 </div>

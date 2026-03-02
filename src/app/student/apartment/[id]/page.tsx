@@ -83,7 +83,7 @@ function ApartmentDetailContent() {
 
   const statusMap: Record<string, { label: string; bg: string; text: string }> = {
     green: { label: "Tasdiqlangan", bg: "bg-green-100", text: "text-green-700" },
-    yellow: { label: "Kutilmoqda", bg: "bg-yellow-100", text: "text-yellow-700" },
+    yellow: { label: "Sariq zona", bg: "bg-yellow-100", text: "text-yellow-700" },
     red: { label: "Qayta to'ldiring", bg: "bg-red-100", text: "text-red-600" },
     blue: { label: "Ko'rib chiqilmoqda", bg: "bg-blue-100", text: "text-blue-700" },
     "Being checked": { label: "Tekshirilmoqda", bg: "bg-blue-100", text: "text-blue-700" },
@@ -100,8 +100,13 @@ function ApartmentDetailContent() {
 
   if (loading) return <><Header title="Ijara ma'lumotlari" /><Loading /></>;
 
+  useEffect(() => {
+    if (!loading && (notFound || !data)) {
+      router.replace(`/student/apartment-type/${id}`);
+    }
+  }, [loading, notFound, data, id, router]);
+
   if (notFound || !data) {
-    router.replace(`/student/apartment-type/${id}`);
     return <><Header title="Ijara ma'lumotlari" /><Loading /></>;
   }
 

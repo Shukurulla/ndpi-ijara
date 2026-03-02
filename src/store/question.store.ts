@@ -50,6 +50,14 @@ interface QuestionState {
   poorNotebook: boolean;
   poorNotebookDoc: File | null;
 
+  // Task 7: Bino tafsilotlari
+  domNumber: string;
+  kvartiranumber: string;
+
+  // Task 13: Geolocation
+  geoLat: number;
+  geoLon: number;
+
   setField: (field: string, value: any) => void;
   reset: () => void;
 }
@@ -95,6 +103,10 @@ const initialState = {
   womenNotebookDoc: null,
   poorNotebook: false,
   poorNotebookDoc: null,
+  domNumber: "",
+  kvartiranumber: "",
+  geoLat: 0,
+  geoLon: 0,
 };
 
 export const useQuestionStore = create<QuestionState>((set) => ({

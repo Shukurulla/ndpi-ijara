@@ -37,7 +37,7 @@ function ApartmentContent() {
 
   const statusMap: Record<string, { label: string; bg: string; text: string }> = {
     green: { label: "Tasdiqlangan", bg: "bg-[rgba(34,197,94,0.1)]", text: "text-[#22C55E]" },
-    yellow: { label: "Kutilmoqda", bg: "bg-[rgba(245,158,11,0.1)]", text: "text-[#F59E0B]" },
+    yellow: { label: "Sariq zona", bg: "bg-[rgba(245,158,11,0.1)]", text: "text-[#F59E0B]" },
     red: { label: "Qayta to'ldiring", bg: "bg-[rgba(239,68,68,0.1)]", text: "text-[#EF4444]" },
     blue: { label: "Ko'rib chiqilmoqda", bg: "bg-[rgba(59,130,246,0.1)]", text: "text-[#3B82F6]" },
     "Being checked": { label: "Tekshirilmoqda", bg: "bg-[rgba(59,130,246,0.1)]", text: "text-[#3B82F6]" },

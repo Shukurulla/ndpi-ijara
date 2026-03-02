@@ -79,7 +79,7 @@ export default function StudentHomePage() {
           bgColor: "bg-[rgba(245,158,11,0.1)]",
           textColor: "text-[#F59E0B]",
           borderColor: "border-l-[#F59E0B]",
-          label: "Kutilmoqda",
+          label: "Sariq zona",
           icon: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/>

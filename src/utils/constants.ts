@@ -48,6 +48,7 @@ export const API_PATHS = {
   PERMISSION_BY_ID: "permission", // + /:permissionId
   PERMISSION_GROUP: "permission", // + /:permissionId/:groupId
   PERMISSION_SPECIAL: "permission/special",
+  PERMISSION_APARTMENTS_BY_TYPE: "permission", // + /:permissionId/apartments-by-type/:type
 
   // FCM
   SEND_FCM_TOKEN: "api/save-fcm-token",

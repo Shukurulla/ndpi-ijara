@@ -235,6 +235,12 @@ export const mainService = {
     return res.data;
   },
 
+  // GET /permission/:permissionId/apartments-by-type/:type
+  getApartmentsByType: async (permissionId: string, type: string) => {
+    const res = await api.get(`${API_PATHS.PERMISSION_APARTMENTS_BY_TYPE}/${permissionId}/apartments-by-type/${type}`);
+    return res.data;
+  },
+
   // ===== Visit Report (Task 7) =====
 
   // POST /appartment/visit-report/:appartmentId (multipart)

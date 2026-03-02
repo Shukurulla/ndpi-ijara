@@ -15,18 +15,24 @@ export default function TutorHomePage() {
   const [statistics, setStatistics] = useState<TutorStatistics | null>(null);
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasActivePermission, setHasActivePermission] = useState(false);
 
   useEffect(() => { init(); }, [init]);
 
   const fetchData = useCallback(async () => {
     try {
-      const [statsRes, groupsRes] = await Promise.all([
+      const [statsRes, groupsRes, noticeRes] = await Promise.all([
         mainService.getTutorStatistics(),
         mainService.getTutorChatGroups(),
+        mainService.getMyNotice(),
       ]);
       const stats = statsRes.statistics || statsRes.data || statsRes;
       setStatistics(stats as any);
       setGroups(groupsRes.data || groupsRes || []);
+      // Active permission ni topish
+      const notices = noticeRes.data || [];
+      const active = notices.find((n: any) => n.status === "process");
+      if (active) setHasActivePermission(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -118,14 +124,12 @@ export default function TutorHomePage() {
             <div className="flex justify-center py-12">
               <div className="loading-spinner" style={{ width: 32, height: 32 }} />
             </div>
-          ) : total === 0 ? (
-            <p className="text-center text-[#9E9E9E] py-8">Hali ijara ma'lumotlari to'ldirilmagan</p>
           ) : (
             <>
               <div className="flex justify-center mb-5">
                 <PieChart statistics={statistics} size={200} />
               </div>
-              
+
               {/* Status Grid */}
               <div className="grid grid-cols-2 gap-2">
                 <StatusCard
@@ -205,6 +209,20 @@ export default function TutorHomePage() {
           )}
         </div>
 
+        {/* Boshqa turdagi ijara */}
+        {hasActivePermission && (
+          <button
+            onClick={() => router.push("/tutor/other-apartments")}
+            className="w-full py-3.5 rounded-xl font-semibold text-base flex items-center justify-center gap-2 border-[1.5px] border-[#6C5CE7] text-[#6C5CE7] bg-white mb-4"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Boshqa turdagi ijara ma&apos;lumotlari
+          </button>
+        )}
+
         {/* Not Logged Students Button */}
         {groups.length > 0 && (
           <button
@@ -221,6 +239,7 @@ export default function TutorHomePage() {
           </button>
         )}
       </div>
+
     </div>
   );
 }
