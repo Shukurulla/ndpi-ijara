@@ -45,8 +45,8 @@ export default function StudentProfilePage() {
   }, [token, router]);
 
   const handleLogout = () => {
-    logout();
     router.replace("/user-type");
+    setTimeout(() => logout(), 100);
   };
 
   // Use API data if available, fallback to store data

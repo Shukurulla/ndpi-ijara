@@ -26,8 +26,8 @@ export default function TutorProfilePage() {
   }, []);
 
   const handleLogout = () => {
-    logout();
     router.replace("/user-type");
+    setTimeout(() => logout(), 100);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
