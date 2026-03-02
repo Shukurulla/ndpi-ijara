@@ -16,6 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <div className="max-w-[480px] mx-auto min-h-screen bg-[#F5F6FA] relative shadow-xl">
+          <div style={{background:"#FF9800",color:"#fff",textAlign:"center",fontSize:11,padding:"2px 0",fontWeight:600,letterSpacing:0.5,position:"sticky",top:0,zIndex:9999}}>
+            TEST REJIMI
+          </div>
           {children}
         </div>
       </body>
