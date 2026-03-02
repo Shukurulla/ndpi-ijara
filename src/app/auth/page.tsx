@@ -70,7 +70,6 @@ function AuthContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="bg-gradient-primary pt-4 pb-16">
-        {/* Back button */}
         <div className="px-4 mb-6">
           <button
             onClick={() => router.back()}
