@@ -1,4 +1,3 @@
-// ========== Auth Models ==========
 export interface StudentLoginRequest {
   login: number;
   password: string;
@@ -60,21 +59,81 @@ export interface StudentGroup {
   educationLang: { name: string; code: string; id: number };
 }
 
-export interface StudentSemester { name: string; code: string; id: number; }
-export interface StudentSpecialty { name: string; code: string; id: number; }
-export interface StudentLevel { name: string; code: string; id: number; }
-export interface StudentEducationForm { name: string; code: string; id: number; }
-export interface StudentEducationType { name: string; code: string; id: number; }
-export interface StudentPaymentForm { name: string; code: string; id: number; }
-export interface StudentStudentStatus { name: string; code: string; id: number; }
-export interface StudentCountry { name: string; code: string; id: number; }
-export interface StudentDistrict { name: string; code: string; id: number; }
-export interface StudentProvince { name: string; code: string; id: number; }
-export interface StudentSocialCategory { name: string; code: string; id: number; }
-export interface StudentAccommodation { name: string; code: string; id: number; }
-export interface StudentUniversity { name: string; code: string; id: number; }
-export interface StudentGender { name: string; code: string; id: number; }
-export interface StudentEducationYear { name: string; code: string; id: number; }
+export interface StudentSemester {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentSpecialty {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentLevel {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentEducationForm {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentEducationType {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentPaymentForm {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentStudentStatus {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentCountry {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentDistrict {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentProvince {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentSocialCategory {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentAccommodation {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentUniversity {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentGender {
+  name: string;
+  code: string;
+  id: number;
+}
+export interface StudentEducationYear {
+  name: string;
+  code: string;
+  id: number;
+}
 export interface StudentDepartment {
   name: string;
   code: string;
@@ -321,10 +380,21 @@ export interface ApartmentLocation {
   lon: number;
 }
 
-export interface ApartmentBoilerImage { image: string; status: string; }
-export interface ApartmentGazStove { image: string; status: string; }
-export interface ApartmentChimney { image: string; status: string; }
-export interface ApartmentContractImage { image: string; }
+export interface ApartmentBoilerImage {
+  image: string;
+  status: string;
+}
+export interface ApartmentGazStove {
+  image: string;
+  status: string;
+}
+export interface ApartmentChimney {
+  image: string;
+  status: string;
+}
+export interface ApartmentContractImage {
+  image: string;
+}
 
 export interface StudentStatusResponse {
   data: StudentStatusData[];
