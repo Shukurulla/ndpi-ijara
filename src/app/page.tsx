@@ -39,18 +39,17 @@ export default function SplashPage() {
             }}
           />
         </div>
-        
+
         <h1 className="text-[28px] font-bold mb-2 tracking-tight">TutorApp</h1>
         <p className="text-white/60 text-[16px]">NDPI Tutor boshqaruv tizimi</p>
-        
-        {/* Loading indicator */}
+
         <div className="mt-8">
-          <div 
-            className="loading-spinner mx-auto" 
-            style={{ 
-              borderColor: "rgba(255,255,255,0.2)", 
-              borderTopColor: "white" 
-            }} 
+          <div
+            className="loading-spinner mx-auto"
+            style={{
+              borderColor: "rgba(255,255,255,0.2)",
+              borderTopColor: "white",
+            }}
           />
         </div>
       </div>
