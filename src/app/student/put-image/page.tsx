@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { mainService } from "@/services/main.service";
 import { useAuthStore } from "@/store/auth.store";
@@ -7,6 +7,14 @@ import { useAuthGuard } from "@/hooks/useAuthGuard";
 import Header from "@/components/Header";
 
 export default function StudentPutImagePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full" /></div>}>
+      <StudentPutImageContent />
+    </Suspense>
+  );
+}
+
+function StudentPutImageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   useAuthGuard();

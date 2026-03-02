@@ -9,6 +9,14 @@ import EmptyState from "@/components/EmptyState";
 import StudentCard from "@/components/StudentCard";
 
 export default function StudentsPage() {
+  return (
+    <Suspense fallback={<><Header title="Talabalar" /><Loading /></>}>
+      <StudentsPageContent />
+    </Suspense>
+  );
+}
+
+function StudentsPageContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();

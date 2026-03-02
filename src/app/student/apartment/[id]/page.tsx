@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { mainService } from "@/services/main.service";
 import { BASE_URL } from "@/utils/constants";
@@ -8,6 +8,14 @@ import Header from "@/components/Header";
 import Loading from "@/components/Loading";
 
 export default function ApartmentDetailPage() {
+  return (
+    <Suspense fallback={<><Header title="Ijara ma'lumotlari" /><Loading /></>}>
+      <ApartmentDetailContent />
+    </Suspense>
+  );
+}
+
+function ApartmentDetailContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();

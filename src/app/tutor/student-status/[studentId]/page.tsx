@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { mainService } from "@/services/main.service";
 import { BASE_URL } from "@/utils/constants";
@@ -7,6 +7,14 @@ import Header from "@/components/Header";
 import Loading from "@/components/Loading";
 
 export default function TutorStudentStatusPage() {
+  return (
+    <Suspense fallback={<><Header title="Talaba holati" /><Loading /></>}>
+      <TutorStudentStatusContent />
+    </Suspense>
+  );
+}
+
+function TutorStudentStatusContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
