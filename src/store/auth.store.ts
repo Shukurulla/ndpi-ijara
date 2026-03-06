@@ -15,6 +15,7 @@ interface AuthState {
   studentId: string | null;
   studentImage: string | null;
   studentRegion: string | null;
+  studentDistrict: string | null;
   studentGroupName: string | null;
   studentGroupId: string | null;
   studentFacultyName: string | null;
@@ -31,6 +32,7 @@ interface AuthState {
     id: string;
     image: string | null;
     region: string;
+    district: string;
     groupName: string;
     groupId: string;
     facultyName: string;
@@ -64,6 +66,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   studentId: null,
   studentImage: null,
   studentRegion: null,
+  studentDistrict: null,
   studentGroupName: null,
   studentGroupId: null,
   studentFacultyName: null,
@@ -97,6 +100,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       studentId: localStorage.getItem(STORAGE_KEYS.STUDENT_ID),
       studentImage: localStorage.getItem(STORAGE_KEYS.STUDENT_IMAGE),
       studentRegion: localStorage.getItem(STORAGE_KEYS.STUDENT_REGION),
+      studentDistrict: localStorage.getItem(STORAGE_KEYS.STUDENT_DISTRICT),
       studentGroupName: localStorage.getItem(STORAGE_KEYS.STUDENT_GROUP_NAME),
       studentGroupId: localStorage.getItem(STORAGE_KEYS.STUDENT_GROUP_ID),
       studentFacultyName: localStorage.getItem(
@@ -124,6 +128,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (data.image)
       localStorage.setItem(STORAGE_KEYS.STUDENT_IMAGE, data.image);
     localStorage.setItem(STORAGE_KEYS.STUDENT_REGION, data.region);
+    localStorage.setItem(STORAGE_KEYS.STUDENT_DISTRICT, data.district);
     localStorage.setItem(STORAGE_KEYS.STUDENT_GROUP_NAME, data.groupName);
     localStorage.setItem(STORAGE_KEYS.STUDENT_GROUP_ID, data.groupId);
     localStorage.setItem(STORAGE_KEYS.STUDENT_FACULTY_NAME, data.facultyName);
@@ -137,6 +142,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       studentId: data.id,
       studentImage: data.image,
       studentRegion: data.region,
+      studentDistrict: data.district,
       studentGroupName: data.groupName,
       studentGroupId: data.groupId,
       studentFacultyName: data.facultyName,
@@ -201,6 +207,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       studentId: null,
       studentImage: null,
       studentRegion: null,
+      studentDistrict: null,
       studentGroupName: null,
       studentGroupId: null,
       studentFacultyName: null,

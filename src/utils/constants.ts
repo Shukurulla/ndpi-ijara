@@ -67,6 +67,7 @@ export const STORAGE_KEYS = {
   STUDENT_ID: "studentId",
   STUDENT_IMAGE: "studentImage",
   STUDENT_REGION: "studentRegion",
+  STUDENT_DISTRICT: "studentDistrict",
   STUDENT_GROUP_NAME: "studentGroupName",
   STUDENT_GROUP_ID: "studentGroupId",
   STUDENT_FACULTY_NAME: "studentFacultyName",

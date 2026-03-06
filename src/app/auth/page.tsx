@@ -39,6 +39,7 @@ function AuthContent() {
           id: s._id,
           image: s.image,
           region: s.province?.name || "",
+          district: s.district?.name || "",
           groupName: s.group?.name || "",
           groupId: s.group?.id?.toString() || "",
           facultyName: s.department?.name || "",
@@ -60,8 +61,12 @@ function AuthContent() {
         router.replace("/tutor/home");
       }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Login yoki parol noto'g'ri");
+      const error = err as { response?: { status?: number; data?: { message?: string } } };
+      if (error.response?.status === 429) {
+        setError("Juda ko'p urinish. 15 daqiqadan keyin qayta urinib ko'ring");
+      } else {
+        setError(error.response?.data?.message || "Login yoki parol noto'g'ri");
+      }
     } finally {
       setLoading(false);
     }

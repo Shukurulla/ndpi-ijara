@@ -39,7 +39,7 @@ function QuestionContent() {
   const permission = searchParams.get("permission") || "";
   const typeFromUrl = searchParams.get("type") || "";
   const store = useQuestionStore();
-  const { setQuestionNumber, setHasFormFilled, studentGender } = useAuthStore();
+  const { setQuestionNumber, setHasFormFilled, studentGender, studentDistrict } = useAuthStore();
   const mapGender = (g: string | null): string => {
     if (!g) return "";
     const l = g.toLowerCase();
@@ -120,7 +120,7 @@ function QuestionContent() {
     }
     if (apartmentType === "bedroom") return ["phone","bedroomNumber","roomNumber","addition","orphan","disability","notebooks"];
     if (apartmentType === "littleHouse") {
-      const steps = ["phone","buildingType","mahalla","address"];
+      const steps = ["phone","buildingType","address"];
       steps.push("ownerName","ownerPhone");
       if (buildingType !== "land") steps.push("centralizedHeating");
       steps.push("addition","orphan","disability","notebooks");
@@ -300,7 +300,7 @@ function QuestionContent() {
         formData.append("roomNumber", store.roomNumber);
         formData.append("description", store.q10Description);
       } else if (apartmentType === "littleHouse") {
-        formData.append("district", selectedMahalla?.name || store.q4District);
+        formData.append("district", studentDistrict || selectedMahalla?.name || store.q4District);
         formData.append("typeOfAppartment", buildingType);
         formData.append("fullAddress", store.q3FullAddress);
         formData.append("lat", store.q4Lat.toString());

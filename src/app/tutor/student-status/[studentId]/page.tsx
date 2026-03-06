@@ -23,6 +23,7 @@ function TutorStudentStatusContent() {
   const aptId = searchParams.get("aptId");
   const [student, setStudent] = useState<any>(null);
   const [apt, setApt] = useState<any>(null);
+  const [allApartments, setAllApartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [boilerStatus, setBoilerStatus] = useState("green");
@@ -51,9 +52,15 @@ function TutorStudentStatusContent() {
         // Kvartira ma'lumotlarini olish
         const aptRes = await mainService.getMyAppartments(studentId);
         const apartments = aptRes.data || [];
-        // Agar aptId berilgan bo'lsa shu appartmentni tanlash, aks holda eng oxirgi aktiv
-        const currentApt = (aptId && apartments.find((a: any) => a._id === aptId))
-          || apartments.find((a: any) => a.current) || apartments[0] || null;
+        // Yangi (current) birinchi, eski keyin
+        const sorted = [...apartments].sort((a: any, b: any) => {
+          if (a.current && !b.current) return -1;
+          if (!a.current && b.current) return 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setAllApartments(sorted);
+        const currentApt = (aptId && sorted.find((a: any) => a._id === aptId))
+          || sorted.find((a: any) => a.current) || sorted[0] || null;
         setApt(currentApt);
 
         if (currentApt) {
@@ -241,7 +248,39 @@ function TutorStudentStatusContent() {
           </div>
         </div>
 
-        {/* Asosiy ma'lumotlar */}
+        {/* Ijara tanlash — agar 2+ bo'lsa */}
+        {allApartments.length > 1 && (
+          <div className="card">
+            <h4 className="text-sm font-semibold mb-2">Ijara ma&apos;lumotlari ({allApartments.length} ta)</h4>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {allApartments.map((a: any, i: number) => (
+                <button
+                  key={a._id}
+                  onClick={() => {
+                    setApt(a);
+                    if (a.boilerImage?.status) setBoilerStatus(a.boilerImage.status === "Being checked" ? "green" : a.boilerImage.status);
+                    if (a.gazStove?.status) setGasStatus(a.gazStove.status === "Being checked" ? "green" : a.gazStove.status);
+                    if (a.chimney?.status) setChimneyStatus(a.chimney.status === "Being checked" ? "green" : a.chimney.status);
+                  }}
+                  className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-medium border transition ${
+                    apt?._id === a._id
+                      ? "bg-[#4776E6] text-white border-[#4776E6]"
+                      : "bg-white text-gray-600 border-gray-200"
+                  }`}
+                >
+                  {a.current ? "Yangi" : `Eski #${allApartments.length - i}`}
+                  <span className={`ml-1.5 inline-block w-2 h-2 rounded-full ${
+                    a.status === "green" ? "bg-green-400" :
+                    a.status === "yellow" ? "bg-yellow-400" :
+                    a.status === "red" ? "bg-red-400" : "bg-blue-400"
+                  }`} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Asosiy ma\'lumotlar */}
         <div className="card">
           <h4 className="text-sm font-semibold mb-3">Asosiy ma&apos;lumotlar</h4>
           <div className="space-y-2 text-sm">
