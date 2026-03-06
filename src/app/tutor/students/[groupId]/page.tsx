@@ -42,15 +42,15 @@ function StudentsPageContent() {
           <div>
             {students.map((s) => (
               <StudentCard
-                key={s.id}
+                key={s._id || s.id}
                 name={s.full_name}
                 image={s.image}
                 group={s.group?.name}
                 faculty={s.department?.name}
                 region={s.province?.name}
                 status={s.appartmentStatus}
-                onClick={() => router.push(`/tutor/student-profile/${s.id}`)}
-                onStatusClick={() => s.appartmentStatus && router.push(`/tutor/student-status/${s.id}`)}
+                onClick={() => router.push(`/tutor/student-profile/${s._id || s.id}`)}
+                onStatusClick={() => s.appartmentStatus && router.push(`/tutor/student-status/${s._id || s.id}`)}
               />
             ))}
           </div>

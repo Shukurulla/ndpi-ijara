@@ -195,6 +195,7 @@ export interface StudentsResponse {
 }
 
 export interface StudentsData {
+  _id?: string;
   id: number;
   full_name: string;
   image: string | null;

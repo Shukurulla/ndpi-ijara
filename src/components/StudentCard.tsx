@@ -28,7 +28,7 @@ export default function StudentCard({
   const imgSrc = image ? (image.startsWith("http") ? image : `${BASE_URL}${image}`) : "/default-avatar.svg";
 
   return (
-    <div className="card flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform" onClick={onClick}>
+    <div className="card flex items-center gap-3 mb-3 cursor-pointer active:scale-[0.98] transition-transform" onClick={onClick}>
       <img
         src={imgSrc}
         alt={name}
