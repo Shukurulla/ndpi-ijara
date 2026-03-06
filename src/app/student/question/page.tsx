@@ -575,7 +575,7 @@ function QuestionContent() {
                       </svg>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 text-sm">{r.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{r.fullAddress}</p>
+                        <p className="text-xs text-gray-500 break-words">{r.fullAddress}</p>
                       </div>
                     </div>
                   </div>
@@ -597,7 +597,7 @@ function QuestionContent() {
               </svg>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-green-900 text-sm">{selectedStreet.name}</p>
-                <p className="text-xs text-green-700 truncate">{selectedStreet.fullAddress}</p>
+                <p className="text-xs text-green-700 break-words">{selectedStreet.fullAddress}</p>
               </div>
               <button type="button" onClick={handleClearStreet}
                 className="ml-2 p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors">

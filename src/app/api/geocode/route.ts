@@ -57,10 +57,16 @@ export async function GET(request: NextRequest) {
         if (seen.has(fullAddress)) continue;
         seen.add(fullAddress);
 
+        // "Узбекистан, Республика Каракалпакстан, " ni olib tashlash
+        const shortAddress = fullAddress
+          .replace(/^Узбекистан,\s*/i, "")
+          .replace(/^Республика Каракалпакстан,\s*/i, "")
+          .replace(/^Каракалпакстан,\s*/i, "");
+
         allResults.push({
           name: geo.name || "",
           description: geo.description || "",
-          fullAddress,
+          fullAddress: shortAddress,
           kind: geo.metaDataProperty?.GeocoderMetaData?.kind || "",
           lon: pos[0] ? parseFloat(pos[0]) : 0,
           lat: pos[1] ? parseFloat(pos[1]) : 0,

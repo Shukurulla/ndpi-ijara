@@ -1,3 +1,5 @@
+// export const BASE_URL = "https://tutorapp.asadbek-durdana.uz";
+// export const SOCKET_URL = "https://tutorapp.asadbek-durdana.uz";
 export const BASE_URL = "https://tutorapp.asadbek-durdana.uz";
 export const SOCKET_URL = "https://tutorapp.asadbek-durdana.uz";
 
