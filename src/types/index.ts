@@ -513,6 +513,7 @@ export interface MyNoticeApartment {
   _id: string;
   status: string;
   bedroom?: string;
+  typeAppartment?: string;
 }
 
 export interface MyNoticeStudent {

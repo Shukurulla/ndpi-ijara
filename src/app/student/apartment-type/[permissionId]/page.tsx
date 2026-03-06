@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { mainService } from "@/services/main.service";
 import Header from "@/components/Header";
 
 const apartmentTypes = [
@@ -53,6 +54,14 @@ export default function ApartmentTypePage() {
   const params = useParams();
   const permissionId = params.permissionId as string;
   const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!permissionId) return;
+    mainService.getExistApartment({ permissionId }).then((res) => {
+      const apt = res?.data;
+      if (apt?.typeAppartment) setSelectedType(apt.typeAppartment);
+    }).catch(() => {});
+  }, [permissionId]);
 
   const handleContinue = () => {
     if (selectedType) {

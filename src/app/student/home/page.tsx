@@ -121,7 +121,7 @@ export default function StudentHomePage() {
     if (status === "red") {
       const permissionId = item.permission || "";
       if (permissionId) {
-        router.push(`/student/apartment/${permissionId}`);
+        router.push(`/student/apartment-type/${permissionId}`);
       }
     } else if (status === "yellow") {
       const apartmentId = item.appartmentId || "";

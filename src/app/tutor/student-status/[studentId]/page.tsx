@@ -6,6 +6,7 @@ import { BASE_URL } from "@/utils/constants";
 import Header from "@/components/Header";
 import Loading from "@/components/Loading";
 import { toast } from "@/components/Toast";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function TutorStudentStatusPage() {
   return (
@@ -32,6 +33,9 @@ function TutorStudentStatusContent() {
   const [showImage, setShowImage] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [resendPending, setResendPending] = useState({ boiler: false, gas: false, chimney: false });
+
+  const [showResendConfirm, setShowResendConfirm] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   // Task 7: Visit report
   const [visitUploading, setVisitUploading] = useState(false);
@@ -120,6 +124,24 @@ function TutorStudentStatusContent() {
     }
   };
 
+
+  const handleResendAll = async () => {
+    if (!apt?.permission) return;
+    setResendLoading(true);
+    try {
+      await mainService.sendNoticeSelectStudents({
+        students: [{ studentId, permissionId: apt.permission }],
+      });
+      toast("Qayta topshirish so'rovi yuborildi!", "success");
+      setShowResendConfirm(false);
+      router.back();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast(error.response?.data?.message || "Xatolik yuz berdi", "error");
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   // Task 14: Camera capture functions
   const openVisitCamera = async () => {
@@ -219,7 +241,7 @@ function TutorStudentStatusContent() {
       )}
       <Header title="Talaba holati" />
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 pb-24 space-y-4">
         {error && <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">{error}</div>}
 
         {/* Student Info */}
@@ -251,31 +273,41 @@ function TutorStudentStatusContent() {
         {/* Ijara tanlash — agar 2+ bo'lsa */}
         {allApartments.length > 1 && (
           <div className="card">
-            <h4 className="text-sm font-semibold mb-2">Ijara ma&apos;lumotlari ({allApartments.length} ta)</h4>
+            <h4 className="text-sm font-semibold mb-2">Ijara tarixi ({allApartments.length} ta)</h4>
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {allApartments.map((a: any, i: number) => (
-                <button
-                  key={a._id}
-                  onClick={() => {
-                    setApt(a);
-                    if (a.boilerImage?.status) setBoilerStatus(a.boilerImage.status === "Being checked" ? "green" : a.boilerImage.status);
-                    if (a.gazStove?.status) setGasStatus(a.gazStove.status === "Being checked" ? "green" : a.gazStove.status);
-                    if (a.chimney?.status) setChimneyStatus(a.chimney.status === "Being checked" ? "green" : a.chimney.status);
-                  }}
-                  className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-medium border transition ${
-                    apt?._id === a._id
-                      ? "bg-[#4776E6] text-white border-[#4776E6]"
-                      : "bg-white text-gray-600 border-gray-200"
-                  }`}
-                >
-                  {a.current ? "Yangi" : `Eski #${allApartments.length - i}`}
-                  <span className={`ml-1.5 inline-block w-2 h-2 rounded-full ${
-                    a.status === "green" ? "bg-green-400" :
-                    a.status === "yellow" ? "bg-yellow-400" :
-                    a.status === "red" ? "bg-red-400" : "bg-blue-400"
-                  }`} />
-                </button>
-              ))}
+              {allApartments.map((a: any, i: number) => {
+                const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString("uz", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "";
+                const statusLabel = a.status === "green" ? "Tasdiqlangan" : a.status === "yellow" ? "Sariq" : a.status === "red" ? "Rad" : "Tekshiruvda";
+                const isActive = apt?._id === a._id;
+                return (
+                  <button
+                    key={a._id}
+                    onClick={() => {
+                      setApt(a);
+                      if (a.boilerImage?.status) setBoilerStatus(a.boilerImage.status === "Being checked" ? "green" : a.boilerImage.status);
+                      if (a.gazStove?.status) setGasStatus(a.gazStove.status === "Being checked" ? "green" : a.gazStove.status);
+                      if (a.chimney?.status) setChimneyStatus(a.chimney.status === "Being checked" ? "green" : a.chimney.status);
+                    }}
+                    className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs border transition ${
+                      isActive
+                        ? "bg-[#4776E6] text-white border-[#4776E6]"
+                        : "bg-white text-gray-600 border-gray-200"
+                    }`}
+                  >
+                    <div className="font-medium flex items-center gap-1.5">
+                      <span className={`inline-block w-2 h-2 rounded-full ${
+                        a.status === "green" ? "bg-green-400" :
+                        a.status === "yellow" ? "bg-yellow-400" :
+                        a.status === "red" ? "bg-red-400" : "bg-blue-400"
+                      }`} />
+                      {i === 0 ? "Joriy" : `#${allApartments.length - i}`}
+                    </div>
+                    <div className={`text-[10px] mt-0.5 ${isActive ? "text-white/70" : "text-gray-400"}`}>
+                      {date} &middot; {statusLabel}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -656,7 +688,31 @@ function TutorStudentStatusContent() {
             <span className="text-green-700 font-medium text-sm">Ko&apos;rib chiqilgan</span>
           </div>
         )}
+
       </div>
+
+      {/* Qayta topshirish — fixed bottom */}
+      {apt.permission && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 z-40">
+          <button
+            onClick={() => setShowResendConfirm(true)}
+            className="w-full py-3 rounded-xl bg-orange-500 text-white font-medium text-sm hover:bg-orange-600 transition"
+          >
+            Qayta topshirishni so&apos;rash
+          </button>
+        </div>
+      )}
+
+      {/* Resend Confirm Dialog */}
+      {showResendConfirm && (
+        <ConfirmDialog
+          title="Qayta topshirish"
+          message={`${student?.full_name || "Talaba"} uchun ijara ma'lumotlarini qayta topshirishni so'raysizmi?`}
+          confirmText={resendLoading ? "Yuborilmoqda..." : "Ha, yuborish"}
+          onConfirm={handleResendAll}
+          onCancel={() => setShowResendConfirm(false)}
+        />
+      )}
 
       {/* Image Modal */}
       {showImage && (

@@ -23,6 +23,10 @@ interface QuestionState {
   bedroomNumber: string;
   roomNumber: string;
 
+  // Kichik tuman
+  smallDistrict: string;
+  otherSmallDistrict: string;
+
   // Task 5-6: Markazlashgan kotelxona
   isCentralizedHeating: boolean | null;
   boilerLocation: string;
@@ -85,6 +89,8 @@ const initialState = {
   contractPdf: null,
   bedroomNumber: "",
   roomNumber: "",
+  smallDistrict: "",
+  otherSmallDistrict: "",
   isCentralizedHeating: null,
   boilerLocation: "",
   isOrphan: false,

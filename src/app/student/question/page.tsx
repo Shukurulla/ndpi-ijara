@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { mainService } from "@/services/main.service";
+import { BASE_URL } from "@/utils/constants";
 import { useQuestionStore } from "@/store/question.store";
 import { useAuthStore } from "@/store/auth.store";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
@@ -69,13 +70,16 @@ function QuestionContent() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const streetWrapperRef = useRef<HTMLDivElement>(null);
 
+  // --- Eski rasm URL lar (prefill) ---
+  const [oldImages, setOldImages] = useState<Record<string, string>>({});
+
   // --- Camera ---
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraField, setCameraField] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Sahifa ochilganda oldingi ma'lumotlarni tozalash
+  // Sahifa ochilganda — eski ma'lumotlarni prefill qilish yoki tozalash
   useEffect(() => {
     store.reset();
     setStep(1);
@@ -87,6 +91,109 @@ function QuestionContent() {
     setAddressHouse("");
     setHasContract(null);
     setOtherBoiler("");
+
+    // Agar permission bor bo'lsa, eski apartment ma'lumotlarini prefill qilish
+    if (permission) {
+      mainService.getExistApartment({ permissionId: permission }).then((res) => {
+        const apt = res?.data;
+        if (!apt) return;
+        // Telefon
+        if (apt.studentPhoneNumber) {
+          const phone = apt.studentPhoneNumber.replace(/^\+998/, "");
+          store.setField("q1Phone", phone);
+        }
+        // Manzil
+        if (apt.fullAddress) store.setField("q3FullAddress", apt.fullAddress);
+        if (apt.district) store.setField("q4District", apt.district);
+        if (apt.location?.lat) store.setField("q4Lat", parseFloat(apt.location.lat) || 0);
+        if (apt.location?.long) store.setField("q4Lon", parseFloat(apt.location.long) || 0);
+        // Bino turi
+        if (apt.typeOfAppartment) setBuildingType(apt.typeOfAppartment);
+        // Dom/kvartira raqami
+        if (apt.appartmentNumber) {
+          const parts = apt.appartmentNumber.split("-");
+          if (parts.length === 2) {
+            store.setField("domNumber", parts[0]);
+            store.setField("kvartiranumber", parts[1]);
+          }
+        }
+        // Shartnoma
+        if (apt.contract !== null && apt.contract !== undefined) setHasContract(apt.contract);
+        // Isitish
+        if (apt.typeOfBoiler) {
+          const isStandard = boilerTypes.includes(apt.typeOfBoiler);
+          store.setField("q7BoilerType", isStandard ? apt.typeOfBoiler : "Boshqa");
+          if (!isStandard) setOtherBoiler(apt.typeOfBoiler);
+        }
+        // Narx, talabalar soni
+        if (apt.priceAppartment) store.setField("q8Price", apt.priceAppartment.toString());
+        if (apt.numberOfStudents) store.setField("q8MemberCount", apt.numberOfStudents.toString());
+        // Uy egasi
+        if (apt.appartmentOwnerName) store.setField("q9OwnerName", apt.appartmentOwnerName);
+        if (apt.appartmentOwnerPhone) {
+          const ownerPhone = apt.appartmentOwnerPhone.replace(/^\+998/, "");
+          store.setField("q9OwnerPhone", ownerPhone);
+        }
+        // Tavsif
+        if (apt.description) store.setField("q10Description", apt.description);
+        // Kichik tuman
+        if (apt.smallDistrict) store.setField("smallDistrict", apt.smallDistrict);
+        // Markazlashgan isitish
+        if (apt.isCentralizedHeating !== undefined) store.setField("isCentralizedHeating", apt.isCentralizedHeating);
+        if (apt.boilerLocation) store.setField("boilerLocation", apt.boilerLocation);
+        // Yotoqxona
+        if (apt.bedroom?.bedroomNumber) store.setField("bedroomNumber", apt.bedroom.bedroomNumber);
+        if (apt.bedroom?.roomNumber) store.setField("roomNumber", apt.bedroom.roomNumber);
+        // Yetimlik
+        if (apt.isOrphan) {
+          store.setField("isOrphan", true);
+          if (apt.orphanType) store.setField("orphanType", apt.orphanType);
+          if (apt.guardianPhone) store.setField("guardianPhone", apt.guardianPhone.replace(/^\+998/, ""));
+        }
+        // Nogironlik
+        if (apt.hasDisability) {
+          store.setField("hasDisability", true);
+          if (apt.disabilityCategory) store.setField("disabilityCategory", apt.disabilityCategory);
+          if (apt.disabilityType) store.setField("disabilityType", apt.disabilityType);
+          if (apt.disabilityCertificateExpiry) store.setField("disabilityCertificateExpiry", apt.disabilityCertificateExpiry);
+        }
+        // Daftarlar
+        if (apt.youthNotebook) store.setField("youthNotebook", true);
+        if (apt.womenNotebook) store.setField("womenNotebook", true);
+        if (apt.poorNotebook) store.setField("poorNotebook", true);
+        // Mahalla
+        if (apt.district) {
+          setSelectedMahalla({ _id: "", name: apt.district, region: "" });
+        }
+        // Manzil qidiruvni prefill
+        if (apt.fullAddress) {
+          setStreetQuery(apt.fullAddress);
+          if (apt.location?.lat && apt.location?.long) {
+            setSelectedStreet({
+              name: apt.fullAddress,
+              fullAddress: apt.fullAddress,
+              lat: parseFloat(apt.location.lat) || 0,
+              lon: parseFloat(apt.location.long) || 0,
+            });
+          }
+        }
+        // Eski rasm URL lar
+        const imgs: Record<string, string> = {};
+        if (apt.boilerImage?.url) imgs.boilerImage = apt.boilerImage.url;
+        if (apt.gazStove?.url) imgs.gasImage = apt.gazStove.url;
+        if (apt.chimney?.url) imgs.chimneyImage = apt.chimney.url;
+        if (apt.additionImage?.url) imgs.additionImage = apt.additionImage.url;
+        if (apt.contractImage) imgs.contractImage = apt.contractImage;
+        if (apt.contractPdf) imgs.contractPdf = apt.contractPdf;
+        if (apt.orphanCertificate) imgs.orphanCertificate = apt.orphanCertificate;
+        if (apt.governorDecision) imgs.governorDecision = apt.governorDecision;
+        if (apt.disabilityCertificate) imgs.disabilityCertificate = apt.disabilityCertificate;
+        if (apt.youthNotebookDoc) imgs.youthNotebookDoc = apt.youthNotebookDoc;
+        if (apt.womenNotebookDoc) imgs.womenNotebookDoc = apt.womenNotebookDoc;
+        if (apt.poorNotebookDoc) imgs.poorNotebookDoc = apt.poorNotebookDoc;
+        setOldImages(imgs);
+      }).catch(() => {});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeFromUrl]);
 
@@ -109,7 +216,7 @@ function QuestionContent() {
 
   const getSteps = (): string[] => {
     if (apartmentType === "tenant") {
-      const steps = ["phone","buildingType","mahalla","address"];
+      const steps = ["phone","buildingType","mahalla","address","smallDistrict"];
       steps.push("contract","boilerType");
       if (buildingType !== "land") steps.push("centralizedHeating");
       steps.push("price","studentsCount","owner","addition",
@@ -120,7 +227,7 @@ function QuestionContent() {
     }
     if (apartmentType === "bedroom") return ["phone","bedroomNumber","roomNumber","addition","orphan","disability","notebooks"];
     if (apartmentType === "littleHouse") {
-      const steps = ["phone","buildingType","address"];
+      const steps = ["phone","buildingType","address","smallDistrict"];
       steps.push("ownerName","ownerPhone");
       if (buildingType !== "land") steps.push("centralizedHeating");
       steps.push("addition","orphan","disability","notebooks");
@@ -129,7 +236,7 @@ function QuestionContent() {
       return steps;
     }
     if (apartmentType === "relative") {
-      const steps = ["phone","buildingType","mahalla","address"];
+      const steps = ["phone","buildingType","mahalla","address","smallDistrict"];
       steps.push("ownerName","ownerPhone");
       if (buildingType !== "land") steps.push("centralizedHeating");
       steps.push("addition","orphan","disability","notebooks");
@@ -223,6 +330,10 @@ function QuestionContent() {
         break;
       case "ownerName": if (!store.q9OwnerName.trim()) { setError("Ismini kiriting"); return; } break;
       case "ownerPhone": if (!store.q9OwnerPhone.trim() || store.q9OwnerPhone.replace(/\D/g, "").length < 9) { setError("Telefon raqamni to'liq kiriting"); return; } break;
+      case "smallDistrict":
+        if (!store.smallDistrict) { setError("Kichik tumanni tanlang"); return; }
+        if (store.smallDistrict === "Boshqa" && !store.otherSmallDistrict.trim()) { setError("Kichik tuman nomini yozing"); return; }
+        break;
       case "apartmentNumber": if (!store.q10ApartmentNumber.trim()) { setError("Xonadon raqamini kiriting"); return; } break;
       case "bedroomNumber": if (!store.bedroomNumber.trim()) { setError("Yotoqxona raqamini kiriting"); return; } break;
       case "roomNumber": if (!store.roomNumber.trim()) { setError("Xona raqamini kiriting"); return; } break;
@@ -248,9 +359,9 @@ function QuestionContent() {
         if (store.womenNotebook && !store.womenNotebookDoc) { setError("Xotin-qizlar daftari hujjatini yuklang"); return; }
         if (store.poorNotebook && !store.poorNotebookDoc) { setError("Kambag'al daftari hujjatini yuklang"); return; }
         break;
-      case "boilerImage": if (!store.boilerImage) { setError("Isitish qurilmasi suratini oling"); return; } break;
-      case "gasImage": if (!store.gasImage) { setError("Gaz plita suratini oling"); return; } break;
-      case "chimneyImage": if (!store.chimneyImage) { setError("Mo'ri suratini oling"); return; } break;
+      case "boilerImage": if (!store.boilerImage && !oldImages.boilerImage) { setError("Isitish qurilmasi suratini oling"); return; } break;
+      case "gasImage": if (!store.gasImage && !oldImages.gasImage) { setError("Gaz plita suratini oling"); return; } break;
+      case "chimneyImage": if (!store.chimneyImage && !oldImages.chimneyImage) { setError("Mo'ri suratini oling"); return; } break;
     }
     setStep(step + 1);
   };
@@ -287,6 +398,7 @@ function QuestionContent() {
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
         formData.append("description", store.q10Description);
+        if (store.smallDistrict) formData.append("smallDistrict", store.smallDistrict === "Boshqa" ? store.otherSmallDistrict : store.smallDistrict);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
           if (store.chimneyImage) formData.append("chimney", store.chimneyImage);
@@ -311,6 +423,7 @@ function QuestionContent() {
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
         formData.append("description", store.q10Description);
+        if (store.smallDistrict) formData.append("smallDistrict", store.smallDistrict === "Boshqa" ? store.otherSmallDistrict : store.smallDistrict);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
           if (store.chimneyImage) formData.append("chimney", store.chimneyImage);
@@ -329,6 +442,7 @@ function QuestionContent() {
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
         formData.append("description", store.q10Description);
+        if (store.smallDistrict) formData.append("smallDistrict", store.smallDistrict === "Boshqa" ? store.otherSmallDistrict : store.smallDistrict);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
           if (store.chimneyImage) formData.append("chimney", store.chimneyImage);
@@ -389,6 +503,7 @@ function QuestionContent() {
       case "studentsCount": return renderStudentsCountStep();
       case "owner": return renderOwnerStep();
       case "apartmentNumber": return renderApartmentNumberStep();
+      case "smallDistrict": return renderSmallDistrictStep();
       case "addition": return renderAdditionStep();
       case "orphan": return renderOrphanStep();
       case "disability": return renderDisabilityStep();
@@ -455,16 +570,58 @@ function QuestionContent() {
     setCameraField("");
   };
 
-  const renderImageStep = (title: string, desc: string, field: string, file: File | null) => (
-    <div><h3 className="text-lg font-semibold mb-2">{title}</h3><p className="text-sm text-gray-500 mb-4">{desc}</p>
-      <button type="button" onClick={() => openCamera(field)}
-        className="block w-full p-6 border-2 border-dashed border-gray-300 rounded-xl text-center cursor-pointer hover:border-[#5B6CF8] hover:bg-blue-50 transition">
-        <div className="text-gray-400">
-          <svg className="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-          <p className="text-sm font-medium">{file ? "Qayta rasmga olish" : "Rasmga olish"}</p>
-        </div>
-      </button>
-      {file && <img src={URL.createObjectURL(file)} alt="Preview" className="mt-3 w-full h-48 object-cover rounded-xl" />}
+  const getOldImgUrl = (url: string) => url.startsWith("http") ? url : `${BASE_URL}${url}`;
+
+  const renderImageStep = (title: string, desc: string, field: string, file: File | null) => {
+    const oldUrl = oldImages[field];
+    const hasPreview = file || oldUrl;
+    return (
+      <div><h3 className="text-lg font-semibold mb-2">{title}</h3><p className="text-sm text-gray-500 mb-4">{desc}</p>
+        <button type="button" onClick={() => openCamera(field)}
+          className="block w-full p-6 border-2 border-dashed border-gray-300 rounded-xl text-center cursor-pointer hover:border-[#5B6CF8] hover:bg-blue-50 transition">
+          <div className="text-gray-400">
+            <svg className="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <p className="text-sm font-medium">{hasPreview ? "Qayta rasmga olish" : "Rasmga olish"}</p>
+          </div>
+        </button>
+        {file ? (
+          <img src={URL.createObjectURL(file)} alt="Preview" className="mt-3 w-full h-48 object-cover rounded-xl" />
+        ) : oldUrl ? (
+          <div className="mt-3 relative">
+            <img src={getOldImgUrl(oldUrl)} alt="Oldingi" className="w-full h-48 object-cover rounded-xl" />
+            <span className="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">Oldingi rasm</span>
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const smallDistrictOptions = [
+    "20 - kichik tuman", "21 - kichik tuman", "22 - kichik tuman", "23 - kichik tuman",
+    "24 - kichik tuman", "25 - kichik tuman", "26 - kichik tuman", "27 - kichik tuman",
+  ];
+
+  const renderSmallDistrictStep = () => (
+    <div>
+      <h3 className="text-lg font-semibold mb-2">Kichik tuman</h3>
+      <p className="text-sm text-gray-500 mb-4">Yashash joyingiz joylashgan kichik tumanni tanlang</p>
+      <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+        {smallDistrictOptions.map((opt) => (
+          <button key={opt} onClick={() => { store.setField("smallDistrict", opt); store.setField("otherSmallDistrict", ""); }}
+            className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${store.smallDistrict === opt ? "border-blue-500 bg-blue-50 text-blue-700 font-medium" : "border-gray-200 hover:border-gray-300"}`}>
+            {opt}
+          </button>
+        ))}
+        <button onClick={() => store.setField("smallDistrict", "Boshqa")}
+          className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${store.smallDistrict === "Boshqa" ? "border-blue-500 bg-blue-50 text-blue-700 font-medium" : "border-gray-200 hover:border-gray-300"}`}>
+          Boshqa
+        </button>
+        {store.smallDistrict === "Boshqa" && (
+          <input type="text" value={store.otherSmallDistrict}
+            onChange={(e) => store.setField("otherSmallDistrict", e.target.value)}
+            placeholder="Kichik tuman nomini kiriting" className="input-field mt-2" />
+        )}
+      </div>
     </div>
   );
 
@@ -685,15 +842,17 @@ function QuestionContent() {
       </div>
       {hasContract && (
         <div className="p-4 bg-gray-50 rounded-xl">
-          <label className="text-sm text-gray-600 mb-1.5 block">Shartnoma fayli (rasm yoki PDF)</label>
-          <input type="file" accept="image/*,.pdf" onChange={(e) => {
+          <label className="text-sm text-gray-600 mb-1.5 block">Shartnoma fayli (PDF)</label>
+          <input type="file" accept=".pdf,application/pdf" onChange={(e) => {
             const file = e.target.files?.[0] || null;
-            if (file?.type === "application/pdf") { store.setField("contractPdf", file); store.setField("contractImage", null); }
-            else { store.setField("contractImage", file); store.setField("contractPdf", null); }
+            store.setField("contractPdf", file);
+            store.setField("contractImage", null);
           }} className="input-field" />
-          {(store.contractImage || store.contractPdf) && (
-            <p className="text-xs text-green-600 mt-1">Fayl: {(store.contractImage as File)?.name || (store.contractPdf as File)?.name}</p>
-          )}
+          {store.contractPdf ? (
+            <p className="text-xs text-green-600 mt-1">Fayl: {(store.contractPdf as File)?.name}</p>
+          ) : (oldImages.contractPdf) ? (
+            <p className="text-xs text-blue-600 mt-1">Oldingi fayl mavjud (yangi yuklamasangiz saqlanadi)</p>
+          ) : null}
         </div>
       )}</div>
   );
