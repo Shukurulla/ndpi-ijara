@@ -356,6 +356,26 @@ export interface ExistApartmentData {
   description?: string;
   permission?: string;
   bedroom?: { bedroomNumber: string; roomNumber: string };
+  isCentralizedHeating?: boolean;
+  boilerLocation?: string;
+  isOrphan?: boolean;
+  orphanType?: string;
+  orphanCertificate?: string;
+  guardianGender?: string;
+  guardianPhone?: string;
+  governorDecision?: string;
+  hasDisability?: boolean;
+  disabilityCategory?: number;
+  disabilityType?: string;
+  disabilityCertificate?: string;
+  disabilityCertificateExpiry?: string;
+  youthNotebook?: boolean;
+  youthNotebookDoc?: string;
+  womenNotebook?: boolean;
+  womenNotebookDoc?: string;
+  poorNotebook?: boolean;
+  poorNotebookDoc?: string;
+  geoLocation?: { lat: number; long: number };
   createdAt?: string;
   updatedAt?: string;
 }
