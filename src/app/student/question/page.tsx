@@ -18,6 +18,16 @@ const apartmentBuildingTypes = [
   { value: "land", label: "Yer uchastkasi" },
 ];
 
+const dormitoryList = [
+  "1-sanli",
+  "2-sanli",
+  "3-sanli",
+  "4-sanli Ellikqala",
+  "1-sanli DXSH (Tariyx)",
+  "2-sanli DXSH",
+  "3-DXSH (zor hotel)",
+];
+
 interface Mahalla { _id: string; name: string; region: string; }
 
 const formatPhone = (raw: string): string => {
@@ -335,7 +345,7 @@ function QuestionContent() {
         if (store.smallDistrict === "Boshqa" && !store.otherSmallDistrict.trim()) { setError("Kichik tuman nomini yozing"); return; }
         break;
       case "apartmentNumber": if (!store.q10ApartmentNumber.trim()) { setError("Xonadon raqamini kiriting"); return; } break;
-      case "bedroomNumber": if (!store.bedroomNumber.trim()) { setError("Yotoqxona raqamini kiriting"); return; } break;
+      case "bedroomNumber": if (!store.bedroomNumber.trim()) { setError("Yotoqxonani tanlang"); return; } break;
       case "roomNumber": if (!store.roomNumber.trim()) { setError("Xona raqamini kiriting"); return; } break;
       case "orphan":
         if (store.isOrphan) {
@@ -401,12 +411,17 @@ function QuestionContent() {
         if (store.smallDistrict) formData.append("smallDistrict", store.smallDistrict === "Boshqa" ? store.otherSmallDistrict : store.smallDistrict);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
+          else if (oldImages.boilerImage) formData.append("oldBoilerImage", oldImages.boilerImage);
           if (store.chimneyImage) formData.append("chimney", store.chimneyImage);
+          else if (oldImages.chimneyImage) formData.append("oldChimney", oldImages.chimneyImage);
         }
         if (store.gasImage) formData.append("gazStove", store.gasImage);
+        else if (oldImages.gasImage) formData.append("oldGazStove", oldImages.gasImage);
         if (store.additionImage) formData.append("additionImage", store.additionImage);
+        else if (oldImages.additionImage) formData.append("oldAdditionImage", oldImages.additionImage);
         if (store.contractImage) formData.append("contractImage", store.contractImage);
         if (store.contractPdf) formData.append("contractPdf", store.contractPdf);
+        else if (oldImages.contractPdf) formData.append("oldContractPdf", oldImages.contractPdf);
       } else if (apartmentType === "bedroom") {
         formData.append("bedroomNumber", store.bedroomNumber);
         formData.append("roomNumber", store.roomNumber);
@@ -426,10 +441,14 @@ function QuestionContent() {
         if (store.smallDistrict) formData.append("smallDistrict", store.smallDistrict === "Boshqa" ? store.otherSmallDistrict : store.smallDistrict);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
+          else if (oldImages.boilerImage) formData.append("oldBoilerImage", oldImages.boilerImage);
           if (store.chimneyImage) formData.append("chimney", store.chimneyImage);
+          else if (oldImages.chimneyImage) formData.append("oldChimney", oldImages.chimneyImage);
         }
         if (store.gasImage) formData.append("gazStove", store.gasImage);
+        else if (oldImages.gasImage) formData.append("oldGazStove", oldImages.gasImage);
         if (store.additionImage) formData.append("additionImage", store.additionImage);
+        else if (oldImages.additionImage) formData.append("oldAdditionImage", oldImages.additionImage);
       } else if (apartmentType === "relative") {
         formData.append("district", selectedMahalla?.name || store.q4District);
         formData.append("typeOfAppartment", buildingType);
@@ -445,10 +464,14 @@ function QuestionContent() {
         if (store.smallDistrict) formData.append("smallDistrict", store.smallDistrict === "Boshqa" ? store.otherSmallDistrict : store.smallDistrict);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
+          else if (oldImages.boilerImage) formData.append("oldBoilerImage", oldImages.boilerImage);
           if (store.chimneyImage) formData.append("chimney", store.chimneyImage);
+          else if (oldImages.chimneyImage) formData.append("oldChimney", oldImages.chimneyImage);
         }
         if (store.gasImage) formData.append("gazStove", store.gasImage);
+        else if (oldImages.gasImage) formData.append("oldGazStove", oldImages.gasImage);
         if (store.additionImage) formData.append("additionImage", store.additionImage);
+        else if (oldImages.additionImage) formData.append("oldAdditionImage", oldImages.additionImage);
       } else {
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
@@ -512,13 +535,35 @@ function QuestionContent() {
       case "gasImage": return renderImageStep("Gaz plita surati", "Gaz plitangizning suratini oling", "gasImage", store.gasImage);
       case "chimneyImage": return renderImageStep("Mo'ri surati", "Mo'ri suratini oling", "chimneyImage", store.chimneyImage);
       case "additionImage": return renderImageStep("Qo'shimcha surat", "Qo'shimcha surat (ixtiyoriy)", "additionImage", store.additionImage);
-      case "bedroomNumber": return renderFieldStep("Yotoqxona raqami", "Yotoqxona raqamingizni kiriting", "bedroomNumber", store.bedroomNumber);
+      case "bedroomNumber": return renderDormitorySelectStep();
       case "roomNumber": return renderFieldStep("Xona raqami", "Xona raqamingizni kiriting", "roomNumber", store.roomNumber);
       case "ownerName": return renderFieldStep("Uy egasi ismi", "Uy egasining to'liq ismini kiriting", "q9OwnerName", store.q9OwnerName);
       case "ownerPhone": return renderOwnerPhoneStep();
       default: return null;
     }
   };
+
+  const renderDormitorySelectStep = () => (
+    <div>
+      <h3 className="text-lg font-semibold mb-2">Yotoqxona</h3>
+      <p className="text-sm text-gray-500 mb-4">Qaysi yotoqxonada yashaysiz?</p>
+      <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+        {dormitoryList.map((name) => (
+          <button
+            key={name}
+            onClick={() => store.setField("bedroomNumber", name)}
+            className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
+              store.bedroomNumber === name
+                ? "border-blue-500 bg-blue-50 text-blue-700 font-medium"
+                : "border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   const renderFieldStep = (title: string, desc: string, field: string, value: string) => (
     <div><h3 className="text-lg font-semibold mb-2">{title}</h3><p className="text-sm text-gray-500 mb-4">{desc}</p>
