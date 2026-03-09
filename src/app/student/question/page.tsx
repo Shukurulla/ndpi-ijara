@@ -323,7 +323,7 @@ function QuestionContent() {
         if (!store.domNumber.trim()) { setError("Dom raqamini kiriting"); return; }
         if (!store.kvartiranumber.trim()) { setError("Kvartira raqamini kiriting"); return; }
         break;
-      case "contract": if (hasContract === null) { setError("Shartnoma borligini tanlang"); return; } break;
+      case "contract": if (hasContract === null) { setError("Shartnoma borligini tanlang"); return; } if (hasContract && !store.contractPdf && !store.contractImage && !oldImages.contractPdf && !oldImages.contractImage) { setError("Ijara shartnomasini yuklang"); return; } break;
       case "boilerType":
         if (!store.q7BoilerType) { setError("Isitish turini tanlang"); return; }
         if (store.q7BoilerType === "Boshqa" && !otherBoiler.trim()) { setError("Isitish uskunasi nomini yozing"); return; }
@@ -365,9 +365,9 @@ function QuestionContent() {
         } break;
       case "notebooks":
         if (!store.noNotebooks && !store.youthNotebook && !store.womenNotebook && !store.poorNotebook) { setError("Kamida bittasini tanlang yoki \"Yo'q\" ni belgilang"); return; }
-        if (store.youthNotebook && !store.youthNotebookDoc) { setError("Yoshlar daftari hujjatini yuklang"); return; }
-        if (store.womenNotebook && !store.womenNotebookDoc) { setError("Xotin-qizlar daftari hujjatini yuklang"); return; }
-        if (store.poorNotebook && !store.poorNotebookDoc) { setError("Kambag'al daftari hujjatini yuklang"); return; }
+        if (store.youthNotebook && !store.youthNotebookDoc && !oldImages.youthNotebookDoc) { setError("Yoshlar daftari hujjatini yuklang"); return; }
+        if (store.womenNotebook && !store.womenNotebookDoc && !oldImages.womenNotebookDoc) { setError("Xotin-qizlar daftari hujjatini yuklang"); return; }
+        if (store.poorNotebook && !store.poorNotebookDoc && !oldImages.poorNotebookDoc) { setError("Kambag'al daftari hujjatini yuklang"); return; }
         break;
       case "boilerImage": if (!store.boilerImage && !oldImages.boilerImage) { setError("Isitish qurilmasi suratini oling"); return; } break;
       case "gasImage": if (!store.gasImage && !oldImages.gasImage) { setError("Gaz plita suratini oling"); return; } break;
