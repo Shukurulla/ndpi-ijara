@@ -75,6 +75,7 @@ export const STORAGE_KEYS = {
   STUDENT_FACULTY_NAME: "studentFacultyName",
   STUDENT_GENDER: "studentGender",
   STUDENT_LEVEL: "studentLevel",
+  STUDENT_ADDRESS: "studentAddress",
   HAS_FORM_FILLED: "hasFormFilled",
   QUESTION_NUMBER: "questionNumber",
 };
