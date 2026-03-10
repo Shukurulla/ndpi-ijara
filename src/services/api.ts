@@ -17,6 +17,10 @@ api.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
+  // FormData yuborilsa Content-Type ni olib tashlash (Axios o'zi boundary bilan qo'yadi)
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
   return config;
 });
 

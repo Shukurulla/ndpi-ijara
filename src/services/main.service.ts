@@ -43,9 +43,7 @@ export const mainService = {
 
   // POST /appartment/create (multipart)
   createApartment: async (formData: FormData): Promise<ApartmentResponseData> => {
-    const res = await api.post(API_PATHS.STUDENT_CREATE_APARTMENT, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await api.post(API_PATHS.STUDENT_CREATE_APARTMENT, formData);
     return res.data;
   },
 
@@ -69,9 +67,7 @@ export const mainService = {
 
   // PUT /appartment/:id (multipart - update images)
   uploadImage: async (appartmentId: string, formData: FormData): Promise<ImageUploadResponse> => {
-    const res = await api.put(`${API_PATHS.APPARTMENT_UPDATE}/${appartmentId}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await api.put(`${API_PATHS.APPARTMENT_UPDATE}/${appartmentId}`, formData);
     return res.data;
   },
 
@@ -97,9 +93,7 @@ export const mainService = {
 
   // PUT /tutor/profile (multipart)
   updateTutorProfileImage: async (formData: FormData): Promise<TutorUpdateProfileImageResponse> => {
-    const res = await api.put(API_PATHS.TUTOR_PROFILE, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await api.put(API_PATHS.TUTOR_PROFILE, formData);
     return res.data;
   },
 
@@ -245,9 +239,7 @@ export const mainService = {
 
   // POST /appartment/visit-report/:appartmentId (multipart)
   uploadVisitReport: async (appartmentId: string, formData: FormData) => {
-    const res = await api.post(`${API_PATHS.APPARTMENT_VISIT_REPORT}/${appartmentId}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await api.post(`${API_PATHS.APPARTMENT_VISIT_REPORT}/${appartmentId}`, formData);
     return res.data;
   },
 
