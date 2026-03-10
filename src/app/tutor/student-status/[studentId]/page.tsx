@@ -376,6 +376,30 @@ function TutorStudentStatusContent() {
                 </div>
               </>
             )}
+            {apt.typeOfAppartment && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Bino turi:</span>
+                <span className="font-medium">{apt.typeOfAppartment === "multi" ? "Ko'p qavatli" : "Yer uchastkasi"}</span>
+              </div>
+            )}
+            {apt.appartmentNumber && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Dom-kvartira:</span>
+                <span className="font-medium">{apt.appartmentNumber}</span>
+              </div>
+            )}
+            {apt.smallDistrict && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Kichik tuman:</span>
+                <span className="font-medium">{apt.smallDistrict}</span>
+              </div>
+            )}
+            {apt.contract !== null && apt.contract !== undefined && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Shartnoma:</span>
+                <span className={`font-medium ${apt.contract ? "text-green-600" : "text-red-500"}`}>{apt.contract ? "Bor" : "Yo'q"}</span>
+              </div>
+            )}
             {apt.description && (
               <div className="flex justify-between">
                 <span className="text-gray-500">Izoh:</span>
