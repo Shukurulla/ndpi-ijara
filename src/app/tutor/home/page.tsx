@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { mainService } from "@/services/main.service";
 import { useAuthStore } from "@/store/auth.store";
+import { usePushNotification } from "@/hooks/usePushNotification";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { BASE_URL } from "@/utils/constants";
 import type { TutorStatistics } from "@/types";
@@ -10,6 +11,7 @@ import PieChart from "@/components/PieChart";
 
 export default function TutorHomePage() {
   const router = useRouter();
+  usePushNotification();
   useAuthGuard();
   const { tutorName, tutorImage, init } = useAuthStore();
   const [statistics, setStatistics] = useState<TutorStatistics | null>(null);

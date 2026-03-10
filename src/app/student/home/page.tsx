@@ -5,6 +5,7 @@ import { mainService } from "@/services/main.service";
 import { useAuthStore } from "@/store/auth.store";
 import { BASE_URL } from "@/utils/constants";
 import type { NotificationData } from "@/types";
+import { usePushNotification } from "@/hooks/usePushNotification";
 
 export default function StudentHomePage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function StudentHomePage() {
     studentFullName, studentFirstName, studentImage, studentId,
     studentGroupName, studentFacultyName, studentLevel, token, init, logout
   } = useAuthStore();
+  usePushNotification();
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
