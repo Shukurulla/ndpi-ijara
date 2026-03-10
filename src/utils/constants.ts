@@ -1,7 +1,7 @@
-export const BASE_URL = "https://tutorapp.asadbek-durdana.uz";
-export const SOCKET_URL = "https://tutorapp.asadbek-durdana.uz";
-// export const BASE_URL = "http://localhost:7788";
-// export const SOCKET_URL = "http://localhost:7788";
+// export const BASE_URL = "https://tutorapp.asadbek-durdana.uz";
+// export const SOCKET_URL = "https://tutorapp.asadbek-durdana.uz";
+export const BASE_URL = "http://localhost:7788";
+export const SOCKET_URL = "http://localhost:7788";
 
 export const API_PATHS = {
   // Auth

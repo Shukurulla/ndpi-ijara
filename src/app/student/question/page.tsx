@@ -914,7 +914,10 @@ function QuestionContent() {
           {store.contractPdf ? (
             <p className="text-xs text-green-600 mt-1">Fayl: {(store.contractPdf as File)?.name}</p>
           ) : (oldImages.contractPdf) ? (
-            <p className="text-xs text-blue-600 mt-1">Oldingi fayl mavjud (yangi yuklamasangiz saqlanadi)</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-blue-600">Yuklangan PDF mavjud</span>
+              <a href={getOldImgUrl(oldImages.contractPdf)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 underline font-medium">Ko&apos;rish</a>
+            </div>
           ) : null}
         </div>
       )}</div>
@@ -1016,7 +1019,14 @@ function QuestionContent() {
           {store.orphanType === "mehribonlikUyi" && (
             <div><label className="text-sm text-gray-600 mb-1.5 block">Guvohnoma (PDF)</label>
               <input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type !== "application/pdf") { e.target.value = ""; return; } store.setField("orphanCertificate", f || null); }} className="input-field" />
-              {store.orphanCertificate && <p className="text-xs text-green-600 mt-1">Fayl: {store.orphanCertificate.name}</p>}</div>
+              {store.orphanCertificate ? (
+                <p className="text-xs text-green-600 mt-1">Fayl: {store.orphanCertificate.name}</p>
+              ) : oldImages.orphanCertificate ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-blue-600">Yuklangan PDF mavjud</span>
+                  <a href={getOldImgUrl(oldImages.orphanCertificate)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 underline font-medium">Ko&apos;rish</a>
+                </div>
+              ) : null}</div>
           )}
           {store.orphanType === "vasiylik" && (
             <div className="space-y-3">
@@ -1026,7 +1036,14 @@ function QuestionContent() {
                     onChange={(e) => store.setField("guardianPhone", e.target.value.replace(/\D/g, "").slice(0, 9))} placeholder="90 123 45 67" className="input-field flex-1" /></div></div>
               <div><label className="text-sm text-gray-600 mb-1.5 block">Hokim qarori (PDF)</label>
                 <input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type !== "application/pdf") { e.target.value = ""; return; } store.setField("governorDecision", f || null); }} className="input-field" />
-                {store.governorDecision && <p className="text-xs text-green-600 mt-1">Fayl: {store.governorDecision.name}</p>}</div>
+                {store.governorDecision ? (
+                  <p className="text-xs text-green-600 mt-1">Fayl: {store.governorDecision.name}</p>
+                ) : oldImages.governorDecision ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-blue-600">Yuklangan PDF mavjud</span>
+                    <a href={getOldImgUrl(oldImages.governorDecision)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 underline font-medium">Ko&apos;rish</a>
+                  </div>
+                ) : null}</div>
             </div>
           )}
         </div>
@@ -1056,7 +1073,14 @@ function QuestionContent() {
             <input type="text" value={store.disabilityType} onChange={(e) => store.setField("disabilityType", e.target.value)} placeholder="Kasallik turini kiriting" className="input-field" /></div>
           <div><label className="text-sm text-gray-600 mb-1.5 block">Spravka (PDF)</label>
             <input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type !== "application/pdf") { e.target.value = ""; return; } store.setField("disabilityCertificate", f || null); }} className="input-field" />
-            {store.disabilityCertificate && <p className="text-xs text-green-600 mt-1">Fayl: {store.disabilityCertificate.name}</p>}</div>
+            {store.disabilityCertificate ? (
+              <p className="text-xs text-green-600 mt-1">Fayl: {store.disabilityCertificate.name}</p>
+            ) : oldImages.disabilityCertificate ? (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-blue-600">Yuklangan PDF mavjud</span>
+                <a href={getOldImgUrl(oldImages.disabilityCertificate)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 underline font-medium">Ko&apos;rish</a>
+              </div>
+            ) : null}</div>
           {store.disabilityCategory && store.disabilityCategory !== 1 && (
             <div><label className="text-sm text-gray-600 mb-1.5 block">Spravka muddati</label>
               <input type="date" value={store.disabilityCertificateExpiry} onChange={(e) => store.setField("disabilityCertificateExpiry", e.target.value)} className="input-field" />
@@ -1086,7 +1110,14 @@ function QuestionContent() {
               <span className="text-sm font-medium">{nb.label}</span></label>
             {nb.val && (
               <div className="mt-3"><input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type !== "application/pdf") { e.target.value = ""; return; } store.setField(nb.docField, f || null); }} className="input-field" />
-                {nb.doc && <p className="text-xs text-green-600 mt-1">Fayl: {(nb.doc as File).name}</p>}</div>
+                {nb.doc ? (
+                  <p className="text-xs text-green-600 mt-1">Fayl: {(nb.doc as File).name}</p>
+                ) : oldImages[nb.docField] ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-blue-600">Yuklangan PDF mavjud</span>
+                    <a href={getOldImgUrl(oldImages[nb.docField])} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 underline font-medium">Ko&apos;rish</a>
+                  </div>
+                ) : null}</div>
             )}
           </div>
         ))}
