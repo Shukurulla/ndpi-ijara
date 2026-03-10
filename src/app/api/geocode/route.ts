@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const YANDEX_API_KEY = "d358de4c-430d-4a8a-bf52-30f48f60ed0c";
+const YANDEX_API_KEY = "8a6b39f7-a80e-4498-8ada-76461664a6af";
 const NUKUS_LON = 59.6;
 const NUKUS_LAT = 42.46;
 
