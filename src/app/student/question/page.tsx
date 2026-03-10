@@ -50,7 +50,7 @@ function QuestionContent() {
   const permission = searchParams.get("permission") || "";
   const typeFromUrl = searchParams.get("type") || "";
   const store = useQuestionStore();
-  const { setQuestionNumber, setHasFormFilled, studentGender, studentDistrict } = useAuthStore();
+  const { setQuestionNumber, setHasFormFilled, studentGender, studentDistrict, studentRegion } = useAuthStore();
   const mapGender = (g: string | null): string => {
     if (!g) return "";
     const l = g.toLowerCase();
@@ -237,9 +237,8 @@ function QuestionContent() {
     }
     if (apartmentType === "bedroom") return ["phone","bedroomNumber","roomNumber","addition","orphan","disability","notebooks"];
     if (apartmentType === "littleHouse") {
-      const steps = ["phone","buildingType","address","smallDistrict"];
-      steps.push("ownerName","ownerPhone");
-      if (buildingType !== "land") steps.push("centralizedHeating");
+      const steps = ["phone"];
+      steps.push("ownerName","ownerPhone","centralizedHeating");
       steps.push("addition","orphan","disability","notebooks");
       if (store.isCentralizedHeating !== true) steps.push("boilerImage","gasImage","chimneyImage","additionImage");
       else steps.push("gasImage","additionImage");
@@ -427,18 +426,12 @@ function QuestionContent() {
         formData.append("roomNumber", store.roomNumber);
         formData.append("description", store.q10Description);
       } else if (apartmentType === "littleHouse") {
-        formData.append("district", studentDistrict || selectedMahalla?.name || store.q4District);
-        formData.append("typeOfAppartment", buildingType);
-        formData.append("fullAddress", store.q3FullAddress);
-        formData.append("lat", store.q4Lat.toString());
-        formData.append("lon", store.q4Lon.toString());
-        if (buildingType === "multi") {
-          formData.append("appartmentNumber", `${store.domNumber}-${store.kvartiranumber}`);
-        }
+        formData.append("district", studentDistrict || "");
+        formData.append("typeOfAppartment", "land");
+        formData.append("fullAddress", [studentRegion, studentDistrict].filter(Boolean).join(", ") || "");
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
         formData.append("description", store.q10Description);
-        if (store.smallDistrict) formData.append("smallDistrict", store.smallDistrict === "Boshqa" ? store.otherSmallDistrict : store.smallDistrict);
         if (store.isCentralizedHeating !== true) {
           if (store.boilerImage) formData.append("boilerImage", store.boilerImage);
           else if (oldImages.boilerImage) formData.append("oldBoilerImage", oldImages.boilerImage);
