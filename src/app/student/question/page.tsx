@@ -1014,8 +1014,8 @@ function QuestionContent() {
               <input type="radio" name="ot" checked={store.orphanType === "vasiylik"} onChange={() => store.setField("orphanType", "vasiylik")} className="w-4 h-4" /><span className="text-sm">Vasiylikka qaraydi</span></label>
           </div>
           {store.orphanType === "mehribonlikUyi" && (
-            <div><label className="text-sm text-gray-600 mb-1.5 block">Guvohnoma (rasm yoki PDF)</label>
-              <input type="file" accept="image/*,.pdf" onChange={(e) => store.setField("orphanCertificate", e.target.files?.[0] || null)} className="input-field" />
+            <div><label className="text-sm text-gray-600 mb-1.5 block">Guvohnoma (PDF)</label>
+              <input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type \!== "application/pdf") { e.target.value = ""; return; } store.setField("orphanCertificate", f || null); }} className="input-field" />
               {store.orphanCertificate && <p className="text-xs text-green-600 mt-1">Fayl: {store.orphanCertificate.name}</p>}</div>
           )}
           {store.orphanType === "vasiylik" && (
@@ -1024,8 +1024,8 @@ function QuestionContent() {
                 <div className="flex items-center gap-2"><span className="text-gray-500 font-medium whitespace-nowrap">+998</span>
                   <input type="tel" inputMode="numeric" value={formatPhone(store.guardianPhone)}
                     onChange={(e) => store.setField("guardianPhone", e.target.value.replace(/\D/g, "").slice(0, 9))} placeholder="90 123 45 67" className="input-field flex-1" /></div></div>
-              <div><label className="text-sm text-gray-600 mb-1.5 block">Hokim qarori (rasm yoki PDF)</label>
-                <input type="file" accept="image/*,.pdf" onChange={(e) => store.setField("governorDecision", e.target.files?.[0] || null)} className="input-field" />
+              <div><label className="text-sm text-gray-600 mb-1.5 block">Hokim qarori (PDF)</label>
+                <input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type \!== "application/pdf") { e.target.value = ""; return; } store.setField("governorDecision", f || null); }} className="input-field" />
                 {store.governorDecision && <p className="text-xs text-green-600 mt-1">Fayl: {store.governorDecision.name}</p>}</div>
             </div>
           )}
@@ -1054,8 +1054,8 @@ function QuestionContent() {
             </div></div>
           <div><label className="text-sm text-gray-600 mb-1.5 block">Kasallik turi</label>
             <input type="text" value={store.disabilityType} onChange={(e) => store.setField("disabilityType", e.target.value)} placeholder="Kasallik turini kiriting" className="input-field" /></div>
-          <div><label className="text-sm text-gray-600 mb-1.5 block">Spravka (rasm yoki PDF)</label>
-            <input type="file" accept="image/*,.pdf" onChange={(e) => store.setField("disabilityCertificate", e.target.files?.[0] || null)} className="input-field" />
+          <div><label className="text-sm text-gray-600 mb-1.5 block">Spravka (PDF)</label>
+            <input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type \!== "application/pdf") { e.target.value = ""; return; } store.setField("disabilityCertificate", f || null); }} className="input-field" />
             {store.disabilityCertificate && <p className="text-xs text-green-600 mt-1">Fayl: {store.disabilityCertificate.name}</p>}</div>
           {store.disabilityCategory && store.disabilityCategory !== 1 && (
             <div><label className="text-sm text-gray-600 mb-1.5 block">Spravka muddati</label>
@@ -1085,7 +1085,7 @@ function QuestionContent() {
               }} className="w-4 h-4 rounded" />
               <span className="text-sm font-medium">{nb.label}</span></label>
             {nb.val && (
-              <div className="mt-3"><input type="file" accept="image/*,.pdf" onChange={(e) => store.setField(nb.docField, e.target.files?.[0] || null)} className="input-field" />
+              <div className="mt-3"><input type="file" accept=".pdf,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.type \!== "application/pdf") { e.target.value = ""; return; } store.setField(nb.docField, f || null); }} className="input-field" />
                 {nb.doc && <p className="text-xs text-green-600 mt-1">Fayl: {(nb.doc as File).name}</p>}</div>
             )}
           </div>
