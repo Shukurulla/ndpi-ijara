@@ -10,10 +10,11 @@ export default function StudentHomePage() {
   const router = useRouter();
   const {
     studentFullName, studentFirstName, studentImage, studentId,
-    studentGroupName, studentFacultyName, studentLevel, token, init
+    studentGroupName, studentFacultyName, studentLevel, token, init, logout
   } = useAuthStore();
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
   useEffect(() => { init(); }, [init]);
@@ -44,7 +45,14 @@ export default function StudentHomePage() {
   }, [studentId]);
 
   useEffect(() => {
-    if (studentId) fetchData();
+    if (studentId) {
+      fetchData();
+      mainService.getStudentProfile().then((res) => {
+        if (res?.data && !res.data.address) {
+          setShowUpdateModal(true);
+        }
+      }).catch(() => {});
+    }
   }, [studentId, fetchData]);
 
   const getImageUrl = (image: string | null | undefined) => {

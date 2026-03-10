@@ -50,7 +50,7 @@ function QuestionContent() {
   const permission = searchParams.get("permission") || "";
   const typeFromUrl = searchParams.get("type") || "";
   const store = useQuestionStore();
-  const { setQuestionNumber, setHasFormFilled, studentGender, studentDistrict, studentRegion } = useAuthStore();
+  const { setQuestionNumber, setHasFormFilled, studentGender, studentDistrict, studentRegion, studentAddress } = useAuthStore();
   const mapGender = (g: string | null): string => {
     if (!g) return "";
     const l = g.toLowerCase();
@@ -219,7 +219,8 @@ function QuestionContent() {
   }, [mahallaSearch, mahallas]);
 
 
-  useEffect(() => { if (typeFromUrl && !store.q5ApartmentType) store.setField("q5ApartmentType", typeFromUrl); }, [typeFromUrl, store]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (typeFromUrl && !store.q5ApartmentType) store.setField("q5ApartmentType", typeFromUrl); }, [typeFromUrl]);
   useEffect(() => { if (!typeFromUrl && permission) router.replace(`/student/apartment-type/${permission}`); }, [typeFromUrl, permission, router]);
 
   const apartmentType = store.q5ApartmentType || typeFromUrl;
@@ -237,7 +238,7 @@ function QuestionContent() {
     }
     if (apartmentType === "bedroom") return ["phone","bedroomNumber","roomNumber","addition","orphan","disability","notebooks"];
     if (apartmentType === "littleHouse") {
-      const steps = ["phone"];
+      const steps = ["phone","hemisAddress"];
       steps.push("ownerName","ownerPhone","centralizedHeating");
       steps.push("addition","orphan","disability","notebooks");
       if (store.isCentralizedHeating !== true) steps.push("boilerImage","gasImage","chimneyImage","additionImage");
@@ -428,7 +429,7 @@ function QuestionContent() {
       } else if (apartmentType === "littleHouse") {
         formData.append("district", studentDistrict || "");
         formData.append("typeOfAppartment", "land");
-        formData.append("fullAddress", [studentRegion, studentDistrict].filter(Boolean).join(", ") || "");
+        formData.append("fullAddress", studentAddress || "");
         formData.append("appartmentOwnerName", store.q9OwnerName);
         formData.append("appartmentOwnerPhone", "+998" + store.q9OwnerPhone.replace(/\D/g, ""));
         formData.append("description", store.q10Description);
@@ -520,6 +521,7 @@ function QuestionContent() {
       case "owner": return renderOwnerStep();
       case "apartmentNumber": return renderApartmentNumberStep();
       case "smallDistrict": return renderSmallDistrictStep();
+      case "hemisAddress": return renderHemisAddressStep();
       case "addition": return renderAdditionStep();
       case "orphan": return renderOrphanStep();
       case "disability": return renderDisabilityStep();
@@ -679,6 +681,29 @@ function QuestionContent() {
         <input type="tel" inputMode="numeric" value={formatPhone(store.q9OwnerPhone)}
           onChange={(e) => store.setField("q9OwnerPhone", e.target.value.replace(/\D/g, "").slice(0, 9))} placeholder="90 123 45 67" className="input-field flex-1" />
       </div></div>
+  );
+
+  const renderHemisAddressStep = () => (
+    <div>
+      <h3 className="text-lg font-semibold mb-2">Yashash manzilingiz</h3>
+      <p className="text-sm text-blue-600 bg-blue-50 rounded-lg p-3 mb-4">
+        Bu ma'lumotlar HEMIS tizimidan avtomatik to'ldirilgan
+      </p>
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Viloyat</label>
+          <input type="text" value={studentRegion || "Ko'rsatilmagan"} disabled className="w-full px-4 py-3 rounded-xl bg-gray-100 text-gray-700 border border-gray-200 cursor-not-allowed" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Tuman</label>
+          <input type="text" value={studentDistrict || "Ko'rsatilmagan"} disabled className="w-full px-4 py-3 rounded-xl bg-gray-100 text-gray-700 border border-gray-200 cursor-not-allowed" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">{"Ko'cha / Mahalla"}</label>
+          <input type="text" value={studentAddress || "Ko'rsatilmagan"} disabled className="w-full px-4 py-3 rounded-xl bg-gray-100 text-gray-700 border border-gray-200 cursor-not-allowed" />
+        </div>
+      </div>
+    </div>
   );
 
   const renderMahallaStep = () => (

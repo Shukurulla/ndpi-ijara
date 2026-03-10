@@ -21,6 +21,7 @@ interface AuthState {
   studentFacultyName: string | null;
   studentGender: string | null;
   studentLevel: string | null;
+  studentAddress: string | null;
   hasFormFilled: boolean;
   questionNumber: number;
 
@@ -38,6 +39,7 @@ interface AuthState {
     facultyName: string;
     gender: string;
     level?: string;
+    address?: string;
   }) => void;
   setTutorData: (data: {
     name: string;
@@ -72,6 +74,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   studentFacultyName: null,
   studentGender: null,
   studentLevel: null,
+  studentAddress: null,
   hasFormFilled: false,
   questionNumber: 0,
 
@@ -108,6 +111,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       ),
       studentGender: localStorage.getItem(STORAGE_KEYS.STUDENT_GENDER),
       studentLevel: localStorage.getItem(STORAGE_KEYS.STUDENT_LEVEL),
+      studentAddress: localStorage.getItem(STORAGE_KEYS.STUDENT_ADDRESS),
       hasFormFilled:
         localStorage.getItem(STORAGE_KEYS.HAS_FORM_FILLED) === "true",
       questionNumber: parseInt(
@@ -135,6 +139,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem(STORAGE_KEYS.STUDENT_GENDER, data.gender);
     if (data.level)
       localStorage.setItem(STORAGE_KEYS.STUDENT_LEVEL, data.level);
+    if (data.address)
+      localStorage.setItem(STORAGE_KEYS.STUDENT_ADDRESS, data.address);
     localStorage.setItem(STORAGE_KEYS.TUTOR_OR_STUDENT, "1");
     set({
       studentFullName: data.fullName,
@@ -148,6 +154,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       studentFacultyName: data.facultyName,
       studentGender: data.gender,
       studentLevel: data.level || null,
+      studentAddress: data.address || null,
       userType: 1,
     });
   },
@@ -213,6 +220,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       studentFacultyName: null,
       studentGender: null,
       studentLevel: null,
+      studentAddress: null,
       hasFormFilled: false,
       questionNumber: 0,
     });

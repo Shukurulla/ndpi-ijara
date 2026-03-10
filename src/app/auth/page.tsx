@@ -45,6 +45,7 @@ function AuthContent() {
           facultyName: s.department?.name || "",
           gender: s.gender?.name || "",
           level: typeof s.level === "string" ? s.level : s.level?.name || "",
+          address: s.address || "",
         });
         router.replace("/student/home");
       } else {

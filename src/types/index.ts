@@ -220,9 +220,13 @@ export interface StudentProfileData {
   image: string | null;
   group: { name: string; code: string };
   department: { name: string };
-  province: { name: string };
+  province: string;
+  district: string;
   gender: { name: string };
   level?: string;
+  address?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export interface TutorProfileResponse {
