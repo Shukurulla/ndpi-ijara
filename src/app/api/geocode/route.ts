@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const YANDEX_API_KEY = "8a6b39f7-a80e-4498-8ada-76461664a6af";
+const YANDEX_API_KEY = "6e46a359-b254-4264-bf45-210dbbb6d13a";
 const NUKUS_LON = 59.6;
 const NUKUS_LAT = 42.46;
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // Parallel qidiruv — hamma variantni bir vaqtda
     const responses = await Promise.all(
-      queries.map((query) => yandexGeocode(query, "ru_RU").catch(() => []))
+      queries.map((query) => yandexGeocode(query, "ru_RU").catch(() => [])),
     );
 
     const allResults: any[] = [];

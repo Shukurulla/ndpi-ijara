@@ -272,25 +272,21 @@ function QuestionContent() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Debounced street search via geocoder API
-  useEffect(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (streetQuery.length < 2) { setStreetResults([]); setStreetSearching(false); return; }
+  // Qidirish tugmasi bosilganda ishlaydi
+  const handleStreetSearch = async () => {
+    if (streetQuery.length < 2) { setStreetResults([]); return; }
     setStreetSearching(true);
-    timerRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(streetQuery)}`);
-        const data = await res.json();
-        const items: StreetResult[] = (data.results || []).map((r: any) => ({
-          name: r.name, fullAddress: r.fullAddress, lat: r.lat, lon: r.lon,
-        }));
-        setStreetResults(items);
-        setShowStreetResults(true);
-      } catch { setStreetResults([]); }
-      finally { setStreetSearching(false); }
-    }, 400);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [streetQuery]);
+    try {
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(streetQuery)}`);
+      const data = await res.json();
+      const items: StreetResult[] = (data.results || []).map((r: any) => ({
+        name: r.name, fullAddress: r.fullAddress, lat: r.lat, lon: r.lon,
+      }));
+      setStreetResults(items);
+      setShowStreetResults(true);
+    } catch { setStreetResults([]); }
+    finally { setStreetSearching(false); }
+  };
 
   const geoRequested = useRef(false);
   const handleNext = () => {
@@ -773,16 +769,21 @@ function QuestionContent() {
               </svg>
               <input type="text" value={streetQuery}
                 onChange={(e) => { setStreetQuery(e.target.value); if (selectedStreet) setSelectedStreet(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleStreetSearch(); } }}
                 onFocus={() => { if (streetResults.length > 0) setShowStreetResults(true); }}
                 placeholder="Ko'cha nomini yozing..."
                 autoComplete="off"
-                className={`w-full pl-10 pr-10 py-3 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${error && !selectedStreet ? "border-red-500" : "border-gray-300"}`} />
+                className={`w-full pl-10 pr-4 py-3 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${error && !selectedStreet ? "border-red-500" : "border-gray-300"}`} />
               {streetSearching && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
             </div>
+            <button type="button" onClick={handleStreetSearch} disabled={streetSearching || streetQuery.length < 2}
+              className="mt-2 w-full py-2.5 rounded-lg bg-[#4776E6] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition">
+              {streetSearching ? "Qidirilmoqda..." : "Qidirish"}
+            </button>
 
             {showStreetResults && streetResults.length > 0 && (
               <div className="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-sm ring-1 ring-black ring-opacity-5 overflow-auto">

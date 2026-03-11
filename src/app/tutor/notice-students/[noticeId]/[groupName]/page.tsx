@@ -161,7 +161,7 @@ function NoticeStudentsContent() {
           <EmptyState message="Talaba topilmadi" />
         ) : (
           <>
-            {submitted.length > 0 && (
+            {submitted.length > 0 ? (
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-2">
                   Topshirganlar ({submitted.length})
@@ -170,17 +170,8 @@ function NoticeStudentsContent() {
                   {submitted.map((s) => renderStudentCard(s, true))}
                 </div>
               </div>
-            )}
-
-            {notSubmitted.length > 0 && (
-              <div className={submitted.length > 0 ? "mt-6" : ""}>
-                <p className="text-sm font-semibold text-gray-500 mb-2">
-                  Topshirmaganlar ({notSubmitted.length})
-                </p>
-                <div className="space-y-3">
-                  {notSubmitted.map((s) => renderStudentCard(s, false))}
-                </div>
-              </div>
+            ) : (
+              <EmptyState message="Hali hech kim topshirmagan" />
             )}
           </>
         )}
