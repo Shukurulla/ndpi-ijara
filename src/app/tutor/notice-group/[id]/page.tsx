@@ -104,7 +104,7 @@ function NoticeGroupContent() {
                         ? (s.image.startsWith("http") ? s.image : `${BASE_URL}${s.image}`)
                         : "/default-avatar.svg";
                       return (
-                        <div key={apt?._id || i} className="card flex items-center gap-3">
+                        <div key={apt?._id || i} className="card flex items-center gap-3 cursor-pointer" onClick={() => s?._id && router.push(`/tutor/student-status/${s._id}?aptId=${apt?._id}`)}>
                           <img src={imgSrc} alt={s?.full_name}
                             className="w-10 h-10 rounded-full object-cover bg-gray-200"
                             onError={(e) => { (e.target as HTMLImageElement).src = "/default-avatar.svg"; }} />
